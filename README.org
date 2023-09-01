@@ -28,7 +28,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:switch.org][switch]]
 ** [[file:enum.org][Enum]]
 ** [[file:error.org][Error]]
-** Struct
+** [[file:struct.org][Struct]]
 ** Import struct
 ** Anonymous function
 ** Tagged union
