@@ -31,7 +31,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:struct.org][Struct]]
 ** [[file:import-struct.org][Import struct]]
 ** [[file:anonymous-function.org][Anonymous function]]
-** Tagged union
+** [[file:tagged-union.org][Tagged union]]
 ** Array
 ** String format
 ** Pointers
