@@ -17,15 +17,15 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 * The tutorial covers the following topics with detailed examples
 
 ** [[file:what-is-zig.org][What is Zig]]
-** Hello world cross-compilation
-** Hello world  cross-compilation
-** Data types
-** Variables
-*** Optional
-** if
-** for
-** while
-** switch
+** [[file:helloworld.org][Hello world cross-compilation]]
+** [[file:helloworld-c.org][Hello world (C) cross-compilation]]
+** [[file:data-types.org][Data types]]
+** [[file:variables.org][Variables]]
+*** [[file:optional_var.org][Optional]]
+** [[file:if.org][if]]
+** [[file:for.org][for]]
+** [[file:while.org][while]]
+** [[file:switch.org][switch]]
 ** Enum
 ** Error
 ** Struct

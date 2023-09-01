@@ -1,0 +1,74 @@
+* Simple hello world
+
+Here is the simple hello world of =Zig= (copy and save it to =./temp.zig=)
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+
+  pub fn main() void {
+      std.debug.print("\n>>> Hello world.", .{});
+  }
+#+END_SRC
+
+
+* Build and run in `zig`
+
+#+BEGIN_SRC bash
+  zig build-exe temp.zig && ./temp
+#+END_SRC
+
+
+
+* Cross-compilation
+
+=-O ReleaseSmall= means *RELEASE* build and *SMALL* binary size (stripped)
+optimization :
+
+#+BEGIN_SRC bash
+  # Linux MUSL (Intel and ARM64)
+  zig build-exe temp.zig -O ReleaseSmall -target x86_64-linux-musl --name x86_64-linux-musl
+  zig build-exe temp.zig -O ReleaseSmall -target aarch64-linux-musl --name aarch64-linux-musl
+
+  # Liunx GLIBC (Intel and ARM64)
+  zig build-exe temp.zig -O ReleaseSmall -target x86_64-linux-gnu --name x86_64-linux-gnu
+  zig build-exe temp.zig -O ReleaseSmall -target aarch64-linux-gnu --name aarch64-linux-gnu
+
+  # MacOS (Intel and ARM64/M1/M2)
+  zig build-exe temp.zig -O ReleaseSmall -target x86_64-macos-none --name x86_64-macos-none
+  zig build-exe temp.zig -O ReleaseSmall -target aarch64-macos-none --name aarch64-macos-none
+#+END_SRC
+
+
+Executable format:
+
+#+BEGIN_SRC bash
+  file aarch64-linux-musl
+  # aarch64-linux-musl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
+  file x86_64-linux-musl
+  # x86_64-linux-musl: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+
+  file aarch64-linux-gnu
+  # aarch64-linux-gnu: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
+  file x86_64-linux-gnu
+  # x86_64-linux-gnu: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+
+  file aarch64-macos-none
+  # aarch64-macos-none: Mach-O 64-bit executable arm64
+  file x86_64-macos-none
+  # x86_64-macos-none: Mach-O 64-bit executable x86_64
+#+END_SRC
+
+
+So, here is the size difference:
+
+#+BEGIN_SRC bash
+  ls -lht
+
+  #  51K aarch64-macos-none*
+  #  23K x86_64-macos-none*
+  # 8.7K aarch64-linux-gnu*
+  # 8.7K x86_64-linux-gnu*
+  # 8.7K aarch64-linux-musl*
+  # 8.7K x86_64-linux-musl*
+#+END_SRC
+
