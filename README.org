@@ -32,7 +32,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:import-struct.org][Import struct]]
 ** [[file:anonymous-function.org][Anonymous function]]
 ** [[file:tagged-union.org][Tagged union]]
-** Array
+** [[file:array.org][Array]]
 ** String format
 ** Pointers
 ** Slice
