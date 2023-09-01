@@ -29,7 +29,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:enum.org][Enum]]
 ** [[file:error.org][Error]]
 ** [[file:struct.org][Struct]]
-** Import struct
+** [[file:import-struct.org][Import struct]]
 ** Anonymous function
 ** Tagged union
 ** Array
