@@ -26,7 +26,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:for.org][for]]
 ** [[file:while.org][while]]
 ** [[file:switch.org][switch]]
-** Enum
+** [[file:enum.org][Enum]]
 ** Error
 ** Struct
 ** Import struct

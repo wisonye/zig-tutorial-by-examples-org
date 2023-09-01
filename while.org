@@ -3,13 +3,16 @@
 ** Use ~while~ loop with optional
 
 #+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
   fn return_optional_result(guess_number: u8) ?bool {
       return if (guess_number == 8) true else false;
   }
 
   pub fn main() !void {
       var guess_number: u8 = 0;
-  o
+
       while (return_optional_result(guess_number)) |win| {
           print(
               "\n>>> guess number '{d}' is the correct anwser: {}",

@@ -1,0 +1,141 @@
+* Enum
+
+** Enum
+
+By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the integer value:
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() void {
+      const Result = enum {
+          Success,
+          Failure,
+      };
+
+      // Declare a specific enum field.
+      const temp_result = Result.Success;
+
+      print("\n>>> [ enum ] - temp_result type: {}, value: {}", .{
+          @TypeOf(temp_result),
+          temp_result,
+      });
+
+      print(
+          "\n>>> [ enum ] - '@intFromEnum(Result.Success) == 0': {} ",
+          .{@intFromEnum(Result.Success) == 0},
+      );
+      print(
+          "\n>>> [ enum ] - '@intFromEnum(Result.Failure) == 1': {} ",
+          .{@intFromEnum(Result.Failure) == 1},
+      );
+  }
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+# >>> [ enum ] - temp_result type: enum.run.Result, value: enum.run.Result.Success
+# >>> [ enum ] - '@intFromEnum(Result.Success) == 0': true
+# >>> [ enum ] - '@intFromEnum(Result.Failure) == 1': true 
+#+END_SRC
+
+
+** Enum with type
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() void {
+    const ResultU8 = enum(u8) {
+        Success = 0x01,
+        Failure = 0x04,
+    };
+
+    print(
+        "\n>>> [ enum ] - '@intFromEnum(ResultU8.Success) == 0x01': {} ",
+        .{@intFromEnum(ResultU8.Success) == 0x01},
+    );
+    print(
+        "\n>>> [ enum ] - '@intFromEnum(ResultU8.Failure) == 0x04': {} ",
+        .{@intFromEnum(ResultU8.Failure) == 0x04},
+    );
+  }
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+  # >>> [ enum ] - '@intFromEnum(ResultU8.Success) == 0x01': true
+  # >>> [ enum ] - '@intFromEnum(ResultU8.Failure) == 0x04': true 
+#+END_SRC
+
+</br>
+
+
+
+** Enum with method
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() void {
+      const ResultU8 = enum(u8) {
+          Success = 0x01,
+          Failure = 0x04,
+
+          const Self = @This();
+
+          pub fn to_string(self: Self) []const u8 {
+              if (self == Self.Success) {
+                  return "Success:)";
+              } else if (self == Self.Failure) {
+                  return "Failure:)";
+              } else {
+                  return "Unknown";
+              }
+          }
+      };
+
+      const result_2 = ResultU8.Failure;
+
+      print(
+          "\n>>> [ enum ] - result_2: {s}",
+          .{result_2.to_string()},
+      );
+  }
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ enum ] - result_2: Failure:)
+#+END_SRC
+
+
+** Switch on enum
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() void {
+      const ResultU8 = enum(u8) {
+          Success = 0x01,
+          Failure = 0x04,
+      };
+
+      //
+      // Switch on enum
+      //
+      const failure_result = ResultU8.Failure;
+      const result_str = switch (failure_result) {
+          ResultU8.Success => "| > Success",
+          ResultU8.Failure => "| > Failure",
+      };
+
+      print(
+          "\n>>> [ enum ] - result_str: {s}",
+          .{result_str},
+      );
+  }
+#+END_SRC
