@@ -1,0 +1,153 @@
+* Error
+
+** ~error~ looks and acts like an ~enum~
+
+#+BEGIN_SRC zig
+  const ServerError = error{
+      ServerIsNotReady,
+      ServerIsTooBusy,
+  };
+#+END_SRC
+
+
+** Variable or function return type can be =Error union= type
+
+=Error union= looks like the =Result<T,E>= type in =Rust= but with different syntax:
+
+~ErrorType!SuccessType~
+
+But the =ErrorType= is just optional, so all of the following work:
+
+- ~!void~: With no =ErrorType= provided
+- ~anyerror!void~: With ~anyerror~ (generic =ErrorType=)
+- ~ServerError!void~: With the particluar =ErrorType=
+
+
+*** Variable error union type:
+
+~anyerror~ refers to the global error set.
+
+You can use ~{!any}~ or ~{!s}~ format string to print an error union value:
+
+#+BEGIN_SRC zig
+  // Error or string
+  var error_or_string: ServerError![]const u8 = error.ServerIsTooBusy;
+  // var error_or_string: anyerror![]const u8 = error.ServerIsTooBusy;
+
+  print(
+      "\n>>> [ errors ] - error_or_string type: {}, value: {!any}",
+      .{ @TypeOf(error_or_string), error_or_string },
+  );
+  print(
+      "\n>>> [ errors ] - error_or_string type: {}, value (in string): {!s}",
+      .{ @TypeOf(error_or_string), error_or_string },
+  );
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ errors ] - error_or_string type: error{ServerIsNotReady,ServerIsTooBusy}![]const u8, value: error.ServerIsTooBusy
+  # >>> [ errors ] - error_or_string type: error{ServerIsNotReady,ServerIsTooBusy}![]const u8, value (in string): error.ServerIsTooBusy⏎
+#+END_SRC
+
+
+*** Function call error handling
+
+#+BEGIN_SRC zig
+  const ServerError = error{
+      ServerIsNotReady,
+      ServerIsTooBusy,
+  };
+
+  fn server_error_to_string(err: ServerError) []const u8 {
+      return switch (err) {
+          ServerError.ServerIsNotReady => "<ServerIsNotReady>",
+          ServerError.ServerIsTooBusy => "<ServerIsTooBusy>",
+          // _ => return "<UnknownServerError",
+      };
+  }
+
+  //
+  // Return error or string literal
+  //
+  fn func_may_return_error(value: u8) ![]const u8 {
+      if (value == 0) {
+          return ServerError.ServerIsNotReady;
+      } else if (value == 1) {
+          return ServerError.ServerIsTooBusy;
+      }
+
+      return "Yup, it works";
+  }
+
+  //
+  // Syntax: `FunctionCall() catch |err| MapErrorToValue`
+  //
+  const func_result_1 = func_may_return_error(0) catch |err| server_error_to_string(err);
+  const func_result_2 = func_may_return_error(1) catch |err| server_error_to_string(err);
+  const func_result_3 = func_may_return_error(2) catch |err| switch (err) {
+      ServerError.ServerIsNotReady => return err,
+      ServerError.ServerIsTooBusy => unreachable,
+  };
+
+  //
+  // `try FunctionCall();` is the shortcut to `FunctionCall() catch |err| return err`
+  //
+  // It means return value if no error. Otherwise, throw error back to the upper caller.
+  //
+  const func_result_4 = try func_may_return_error(3);
+
+  print("\n>>> [ errors ] - func_result_1: {s}", .{func_result_1});
+  print("\n>>> [ errors ] - func_result_2: {s}", .{func_result_2});
+  print("\n>>> [ errors ] - func_result_3: {s}", .{func_result_3});
+  print("\n>>> [ errors ] - func_result_4: {s}", .{func_result_4});
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ errors ] - func_result_1: <ServerIsNotReady>
+  # >>> [ errors ] - func_result_2: <ServerIsTooBusy>
+  # >>> [ errors ] - func_result_3: Yup, it works⏎
+  # >>> [ errors ] - func_result_4: Yup, it works⏎
+#+END_SRC
+    </br>
+
+
+** How to silent a function call which return =Error union=
+
+For example, I want to format a string into a buffer, and ~std.fmt.bufPrint~ returns an error union ~BufPrintError![]u8~. So I should catch the error and map to empty string when formatting fails:
+
+#+BEGIN_SRC zig
+  // No need to zero inited
+  var state_buf: [20]u8 = undefined;
+
+  //
+  // Return the formatted string slice
+  //
+  const state_str = switch (self.state) {
+      GameState.GS_UNINIT => std.fmt.bufPrint(&state_buf, "GS_UNINIT", .{}) catch "",
+      GameState.GS_INIT => std.fmt.bufPrint(&state_buf, "GS_INIT", .{}) catch "",
+      GameState.GS_BEFORE_START => std.fmt.bufPrint(&state_buf, "GS_BEFORE_START", .{}) catch "",
+      GameState.GS_PLAYING => std.fmt.bufPrint(&state_buf, "GS_PLAYING", .{}) catch "",
+      GameState.GS_PLAYER_WINS => std.fmt.bufPrint(&state_buf, "GS_PLAYER_WINS", .{}) catch "",
+      GameState.GS_PAUSE => std.fmt.bufPrint(&state_buf, "GS_PAUSE", .{}) catch "",
+  };
+
+  print("\n >>>> state_str len: {}, byte size: {}, value: {s}", .{
+      state_str.len,
+      @sizeOf(@TypeOf(state_str)),
+      state_str,
+  });
+#+END_SRC
+
+
+** How to convert an ~error~ to a string
+
+Use ~@errorName(ERROR_HERE)~:
+
+#+BEGIN_SRC zig
+const my_error = error.MyCustomError;
+print(
+    "\n>>> my error type: {}, error name str: {s}",
+    .{ @TypeOf(my_error), @errorName(my_error) },
+);
+#+END_SRC
+

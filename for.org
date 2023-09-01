@@ -65,7 +65,7 @@
 #+END_SRC
 
 
-** inline for loop
+** inline ~for~ loop
 
 =inline for loop= unroll or expand at comile-time, I treat it as the simple version of =macro=.
 

@@ -1,6 +1,6 @@
 * Enum
 
-** Enum
+** ~enum~
 
 By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the integer value:
 
@@ -41,7 +41,7 @@ By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the 
 #+END_SRC
 
 
-** Enum with type
+** ~enum~ with type
 
 #+BEGIN_SRC zig
   const std = @import("std");
@@ -74,7 +74,7 @@ By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the 
 
 
 
-** Enum with method
+** ~enum~ with method
 
 #+BEGIN_SRC zig
   const std = @import("std");
