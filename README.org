@@ -30,7 +30,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:error.org][Error]]
 ** [[file:struct.org][Struct]]
 ** [[file:import-struct.org][Import struct]]
-** Anonymous function
+** [[file:anonymous-function.org][Anonymous function]]
 ** Tagged union
 ** Array
 ** String format
