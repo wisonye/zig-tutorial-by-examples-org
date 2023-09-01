@@ -84,5 +84,3 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** Iterator pattern
 *** Multithreading
 *** Send HTTP request
-
-[[file:readme-images/chapter-preview.png][Chapter Preview]]
