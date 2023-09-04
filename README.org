@@ -33,7 +33,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:anonymous-function.org][Anonymous function]]
 ** [[file:tagged-union.org][Tagged union]]
 ** [[file:array.org][Array]]
-** String format
+** [[file:string-format.org][String format]]
 ** Pointers
 ** Slice
 *** Slice syntax
