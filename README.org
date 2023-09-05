@@ -45,8 +45,8 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:number-to-string.org][Number to string]]
 ** [[file:typedef.org][typedef]]
 ** =comptime= and generic
-*** =comptime=
-*** =Static dispatch=
+*** [[file:comptime.org][comptime]]
+*** [[file:static-dispatch.org][Static dispatch]]
 *** Convert data type example
 ** Interface and dynamic dispatch
 ** Bits
