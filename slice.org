@@ -1,0 +1,5 @@
+* Slice
+
+Detail explanation video:
+
+[[https://www.youtube.com/watch?v=VgjRyaRTH6E][Solving Common Pointer Conundrums - Loris Cro]]

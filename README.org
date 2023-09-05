@@ -35,11 +35,11 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:array.org][Array]]
 ** [[file:string-format.org][String format]]
 ** [[file:pointer.org][Pointers]]
-** Slice
-*** Slice syntax
-*** Why slice instead of pointer
-*** Slice features
-*** Slice pitfall
+** [[file:slice.org][Slice]]
+*** [[file:slice-syntax.org][Slice syntax]]
+*** [[file:why-slice-intead-of-pointer.org][Why slice instead of pointer]]
+*** [[file:slice-features.org][Slice features]]
+*** [[file:slice-pitfall.org][Slice pitfall]]
 ** String
 ** Manipulate String
 ** Number to string
