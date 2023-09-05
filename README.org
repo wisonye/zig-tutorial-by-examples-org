@@ -40,7 +40,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:why-slice-intead-of-pointer.org][Why slice instead of pointer]]
 *** [[file:slice-features.org][Slice features]]
 *** [[file:slice-pitfall.org][Slice pitfall]]
-** String
+** [[file:string.org][String]]
 ** Manipulate String
 ** Number to string
 ** =typedef=
