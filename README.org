@@ -41,8 +41,8 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:slice-features.org][Slice features]]
 *** [[file:slice-pitfall.org][Slice pitfall]]
 ** [[file:string.org][String]]
-** Manipulate String
-** Number to string
+** [[file:manipulate-string.org][Manipulate String]]
+** [[file:number-to-string.org][Number to string]]
 ** =typedef=
 ** =comptime= and generic
 *** =comptime=
