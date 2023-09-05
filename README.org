@@ -43,7 +43,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:string.org][String]]
 ** [[file:manipulate-string.org][Manipulate String]]
 ** [[file:number-to-string.org][Number to string]]
-** =typedef=
+** [[file:typedef.org][typedef]]
 ** =comptime= and generic
 *** =comptime=
 *** =Static dispatch=
