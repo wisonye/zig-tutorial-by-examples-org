@@ -1,0 +1,87 @@
+* Pointer conversion
+
+** Convert between pointer and integer
+
+| Function    | Description                                                       |
+|-------------+-------------------------------------------------------------------|
+| ~@intFromPtr~ | From ~*T/?*T~ to ~usize~                                              |
+| ~@ptrFromInt~ | From ~intFromPtr~ to ~*T/?*T~                                         |
+| ~@ptrCast~    | From ~*T~ to ~*Another~, the return type is the inferred result type. |
+|             |                                                                   |
+
+Example:
+
+#+BEGIN_SRC zig
+  const temp_var = "string literal";
+  const ptr = &temp_var;
+  const int_from_ptr = @intFromPtr(ptr);
+  const ptr_from_int: *usize = @ptrFromInt(int_from_ptr);
+
+  print("\n>>> ptr: {*}", .{ptr});
+  print("\n>>> int_from_ptr: 0x{X}", .{int_from_ptr});
+  print("\n>>> ptr_from_int: {p}", .{ptr_from_int});
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> ptr: *const [14:0]u8@2aa9f0
+  # >>> int_from_ptr: 0x2AA9F0
+  # >>> ptr_from_int: usize@2aa9f0
+#+END_SRC
+
+
+** Convert between different type of pointers
+
+| Function      | Description                                                       |
+|---------------+-------------------------------------------------------------------|
+| ~@ptrCast~      | From ~*T~ to ~*Another~, the return type is the inferred result type. |
+| ~@constCast~    | Remove the ~const~ from ~*const T~ to ~*T~                              |
+| ~@volatileCast~ | move the ~volatile~ from ~*volatile T~ to ~*T~                          |
+|               |                                                                   |
+
+
+For the ~@ptrCast~, you have to provide the result type either via explicit variable type or type conversion combined with ~@as~. Otherwise, you will end up with the following error:
+
+=@ptrCast must have a known result type=
+
+
+Example:
+
+#+BEGIN_SRC zig
+  const string_literal_var = "string literal";
+  const ptr_with_explicity_type: [*]const u8 = @ptrCast(string_literal_var);
+  const ptr_without_explicity_type = @as([*]const u8, @ptrCast(string_literal_var));
+
+  print("\n>>> ptr_with_explicity_type, type: {}, address: 0x{*}", .{
+      @TypeOf(ptr_with_explicity_type),
+      ptr_with_explicity_type,
+  });
+  print("\n>>> ptr_without_explicity_type, type: {}, address: 0x{*}", .{
+      @TypeOf(ptr_without_explicity_type),
+      ptr_without_explicity_type,
+  });
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> ptr_with_explicity_type, type: [*]const u8, address: 0xu8@20cc08
+  # >>> ptr_without_explicity_type, type: [*]const u8, address: 0xu8@20cc08
+#+END_SRC
+
+
+** Something about =Alignment=
+
+Each type has an alignment - a number of bytes such that, when a value of the type is loaded from or stored to memory, the memory address must be evenly divisible by this number.
+
+You can use ~@alignOf~ to find out this value for any type.
+
+Alignment depends on the CPU architecture, but is always a power of two, and less than ~1 << 29~.
+
+| Function   | Description                                                        |
+|------------+--------------------------------------------------------------------|
+| ~@alignOf~   | Returns the number of bytes from a given type should be aligned to |
+|            | for the current target to match the C ABI.                         |
+| ~@alignCast~ |                                                                    |
+
+
+~*T~ is really a shorthand for ~*align(@alignOf(T)) T~.
+
+~void*~ in =Zig= is ~?*anyopaque~ can point to any individual byte in memory, which means it has alignment 1 (byte).

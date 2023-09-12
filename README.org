@@ -52,11 +52,11 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:everything-about-logging.org][Everything about logging]]
 ** [[file:logging-in-unit-test.org][logging in unit test]]
 ** [[file:reader-and-writer.org][Reader and writer]]
-** Struct fields compression
-** Builtin functions
-*** Type info
-*** Type conversion
-*** Pointer conversion
+** [[file:struct-field-compression.org][Struct fields compression]]
+** [[file:builtin-functions.org][Builtin functions]]
+*** [[file:builtin-type-info.org][Type info]]
+*** [[file:builtin-type-convesion.org][Type conversion]]
+*** [[file:builtin-pointer-conversion.org][Pointer conversion]]
 ** Memory
 *** Choose an allocator
 *** Print memory bytes in HEX
