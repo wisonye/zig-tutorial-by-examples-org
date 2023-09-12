@@ -59,7 +59,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:builtin-pointer-conversion.org][Pointer conversion]]
 ** [[file:memory.org][Memory]]
 *** [[file:choose-an-allocator.org][Choose an allocator]]
-*** Print memory bytes in HEX
+*** [[file:print-memory-in-hex.org][Print memory bytes in HEX]]
 ** Build System
 *** Release build
 *** Conditional compilation
