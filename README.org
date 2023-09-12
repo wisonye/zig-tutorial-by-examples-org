@@ -68,7 +68,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** Customize build step
 *** A pitfall when using dependOn
 *** Add existing library
-*** Compile C project
+*** [[file:compile-c-project.org][Compile C project]]
 *** Modules and dependencies
 *** Pass build option to dependencies
 *** Test fixed dependencies locally
