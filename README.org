@@ -49,8 +49,8 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:static-dispatch.org][Static dispatch]]
 ** [[file:interface.org][Interface and dynamic dispatch]]
 ** [[file:bits.org][Bits]]
-** Everything about logging
-** logging in unit test
+** [[file:everything-about-logging.org][Everything about logging]]
+** [[file:logging-in-unit-test.org][logging in unit test]]
 ** Reader and writer
 ** Struct fields compression
 ** Builtin functions
