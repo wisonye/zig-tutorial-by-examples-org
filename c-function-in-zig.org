@@ -1,0 +1,134 @@
+* C functions in Zig
+
+** Standard Libc API
+
+You can use any existing =LibC= functions direclty via ~std.c~:
+
+#+BEGIN_SRC zig
+  std.c._exit
+  std.c.abort
+  std.c.mkdir
+  std.c.fopen
+  std.c.fread
+  std.c.fwrite
+  std.c.fclose
+  std.c.malloc
+  std.c.free
+  std.c.pthread_xxxx
+  ......
+#+END_SRC
+
+Or you can use the portable version via ~std.os~. A few examples below:
+
+| Libc                     | Zig std                         |
+|--------------------------|---------------------------------|
+| open(path, flags, ...)   | std.os.open(path, flags, perm)  |
+| read(fd, buffer, size)   | std.os.read(fd, buffer)         |
+| mkdir(path, mode)        | std.os.mkdir(path, mode)        |
+| unlink(path)             | std.os.unlink(path)             |
+
+
+** Equivalent C functions in Zig
+
+Some daily =Libc= functions in =zig=:
+
+*** ~memset~ --> Builtin ~@memset~
+
+Use to init buffer
+
+#+BEGIN_SRC zig
+  var buffer: [10]u8 = undefined;
+  @memset(&buffer, 0xEF);
+  print("\n>>> buffer, len: {d}, data: {s}", .{
+      buffer.len,
+      std.fmt.fmtSliceHexUpper(&buffer),
+  });
+#+END_SRC
+
+Documentation is [[https://ziglang.org/documentation/master/#memset][here]].
+
+If you use ~memset~ to zero struct, then you can use the following functions in zig to do the same thing:
+
+[[https://ziglang.org/documentation/master/std/#A;std:mem.zeroes][std.mem.zero]]
+[[https://ziglang.org/documentation/master/std/#A;std:mem.zeroInit][std.mem.zeroInit]]
+
+
+*** ~memcpy~ --> Builtin ~@memcpy~ or from std `std.mem.copy` or `std.mem.copyBackwards`
+
+#+BEGIN_SRC zig
+  const buffer_1 = [_]u8{0xEF} ** 10;
+  var buffer_2 = [_]u8{0xCD} ** 10;
+  @memcpy(&buffer_2, &buffer_1);
+  print("\n>>> buffer_2, len: {d}, data: {s}", .{
+      buffer_2.len,
+      std.fmt.fmtSliceHexUpper(&buffer_2),
+  });
+#+END_SRC
+
+Documentation is [[https://ziglang.org/documentation/master/#memcpy][here]]
+
+~@memcpy~ asks for the source and the dest MUST have the same length, if you need partical copy, then you can use ~std.mem.copy~ or ~std.mem.copyBackwards~ instead:
+
+#+BEGIN_SRC zig
+  // @memcpy(&buffer_2, &buffer_1);
+
+  //
+  // For example, copy `buffer_1` to `buffer_2` by slicing to control the copy length
+  //
+  std.mem.copy(u8, buffer_2[0..buffer_1.len], buffer_1[0..]);
+#+END_SRC
+
+
+One more example about using ~std.mem.copy~:
+
+#+BEGIN_SRC zig
+  //
+  // Rest and copy string
+  //
+  fn mem_set_and_mem_copy(comptime original: ?[]const u8) void {
+      _ = (original) orelse {
+          print("\n>>> [ strings, mem_set_and_mem_copy ]: 'original' is null.", .{});
+          return;
+      };
+
+      const str_len = (original.?.len);
+      var str_copied: [str_len:0]u8 = undefined;
+      @memset(&str_copied, 0);
+      print("\n>>> [ strings, mem_set_and_mem_copy ]: 'str_copied' after memest, len: {}, value: {any}", .{ str_copied.len, str_copied });
+
+      std.mem.copy(u8, str_copied[0..str_copied.len], original.?[0..str_len]);
+      print("\n>>> [ strings, mem_set_and_mem_copy ]: 'str_copied' after memcpy, len: {}, value: {s}", .{ str_copied.len, str_copied });
+  }
+
+  ///
+  ///
+  ///
+  pub fn main() void {
+      const temp_str = "1234567890";
+      mem_set_and_mem_copy(temp_str);
+  }
+#+END_SRC
+
+
+[[https://ziglang.org/documentation/master/std/src/mem.zig.html#L198][std.mem.copy source]]
+[[https://ziglang.org/documentation/master/std/src/mem.zig.html#L206][std.mem.copyBackwards source]]
+
+
+*** ~strcmp~ --> ~std.mem.eql~
+
+~std.mem.eql~ only compare the ~len~ and ~data~
+
+#+BEGIN_SRC zig
+  const str_1 = "Hello";
+  const str_2 = "Hello";
+  print(
+      "\n>>> [ strings, check_string_equal_or_not ] - str1 == str2: {}",
+      .{std.mem.eql(u8, str_1, str_2)},
+  );
+#+END_SRC
+```
+
+Documentation is [[https://ziglang.org/documentation/master/std/#A;std:mem.eql][here]]
+
+[[https://ziglang.org/documentation/master/std/src/mem.zig.html#L606][std.mem.eql source]]
+

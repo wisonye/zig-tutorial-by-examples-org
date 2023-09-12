@@ -75,7 +75,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:import-c-headers.org][Import C headers]]
 *** [[file:c-data-type.org][C data type]]
 *** [[file:deal-with-c-pointer.org][Deal with C pointers]]
-*** Equivalent functions in `Zig`
+*** [[file:c-function-in-zig.org][C functions in Zig]]
 *** Variadic functions in `Zig`
 ** How to
 *** Read environment variable
