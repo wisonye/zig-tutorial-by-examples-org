@@ -79,6 +79,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:variadic-functions-in-zig.org][Variadic functions in Zig]]
 ** How to
 *** [[file:how-to-read-env.org][Read environment variable]]
+*** [[file:how-to-read-process-arguments.org][Read process arguments]]
 *** Execute command
 *** Use ArrayList
 *** Use HashMap
