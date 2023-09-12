@@ -66,11 +66,11 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:build-multiple-targets.org][Build multiple targets]]
 *** [[file:custom-build-step.org][Customize build step]]
 *** [[file:a-pitfall-when-using-dependon.org][A pitfall when using dependOn]]
-*** Add existing library
+*** [[file:how-to-add-exisiting-library.org][Add existing library]]
 *** [[file:compile-c-project.org][Compile C project]]
-*** Modules and dependencies
-*** Pass build option to dependencies
-*** Test fixed dependencies locally
+*** [[file:modules-and-dependencies.org][Modules and dependencies]]
+*** [[file:pass-build-option-to-dependencies.org][Pass build option to dependencies]]
+*** [[file:test-fixed-dependencies-locally.org][Test fixed dependencies locally]]
 ** Working with C
 *** [[file:import-c-headers.org][Import C headers]]
 *** [[file:c-data-type.org][C data type]]
