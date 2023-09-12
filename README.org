@@ -82,7 +82,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:how-to-read-process-arguments.org][Read process arguments]]
 *** [[file:how-to-execute-command.org][Execute command]]
 *** [[file:how-to-use-arraylist.org][Use ArrayList]]
-*** Use HashMap
+*** [[file:how-to-use-hashmap.org][Use HashMap]]
 *** Handle JSON
 *** Iterator pattern
 *** Multithreading
