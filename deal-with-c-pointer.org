@@ -1,0 +1,120 @@
+* Deal with C pointers
+
+You might see this error very often when dealing with C pointer and Zig pointer:
+
+#+BEGIN_SRC bash
+   error: expected type '[*c]T', found '[]T'
+#+END_SRC
+
+~T~ is the concrete type you use in your source code.
+
+The ~[*c]T~ means C pointer which can be pointed to a single-item or many-item (like C Array).
+
+No matter you use ~@cImport~ or ~zig translate-c~ to import C header, it generates the ~extern~ types/variables/functions that you can use it in your =Zig= source code. And usually, you will see the following types in the translated =Zig= source code:
+
+| Translated type | Represent C type     |
+|-----------------+----------------------|
+| ~?*anyopaque~     | ~void *~               |
+| ~[*c]const u8~    | C string or U8 array |
+
+
+Let's take the following extern function as an example:
+
+#+BEGIN_SRC zig
+  pub extern fn printf(__format: [*c]const u8, ...) c_int;
+#+END_SRC
+
+
+When dealing with the ~[*c]T~ (C pointer), you have a few choices to make your code work. 
+
+** 1. Stick with Zig pointer type (high recommended)
+
+You can open the translated zig source code and modify the ~[*c]T~ to become:
+
+- ~*T~   if you know that's a single item pointer 
+- ~[*]T~ if you know that's a many-item pointer 
+  
+This gives you the extra type safety check by =Zig= compiler!!!
+
+For example, you know the ~printf~ accepts a C string which means a many-item pointer that points to an u8 array, then you should change the extern function signature to this (remove the ~c~ from ~[*c]~:
+
+#+BEGIN_SRC zig
+  pub extern fn printf(__format: [*]const u8, ...) c_int;
+#+END_SRC
+
+So, the ~__format~ parameter becomes the =Zig= many-item pointer, all pointer safety-check and many-item pointer syntaxes will be applied to it which you can't have if that's a C pointer type!!!
+
+#+BEGIN_SRC zig
+  pub extern fn printf(__format: [*]const u8, ...) c_int;
+
+  //
+  // Return zig string slice
+  //
+  pub fn get_my_name() []const u8 {
+      return "Wison";
+  }
+
+  //
+  // Return zig string slice
+  //
+  pub fn get_printf_format_string() []const u8 {
+      return "\n>>> my_name | len: %d, value: %s";
+  }
+
+  pub fn main() void {
+    //
+    // @TypeOf(my_name): []const u8
+    //
+    const my_name = get_my_name();
+
+    //
+    // @TypeOf(format_string): []const u8
+    //
+    const format_string = get_printf_format_string();
+
+    //
+    // Call the C API
+    //
+    _ = printf(
+        @as([*]const u8, @ptrCast(format_string)),
+        my_name.len,
+        @as([*]const u8, @ptrCast(my_name)),
+    );
+  }
+#+END_SRC
+
+So, it works.
+
+
+** 2. Convert your pointer type to ~[*c]T~ when calling C API
+
+If you can't modify the translated zig source code (e.g. you're using third-party libraries), then you have to convert your ~*T~ or ~[*]T~ Zig pointer to the ~[*c]T~ C pointer.
+
+All ~[]T/*T/[*]T~ are able to coerce to ~[*c]T~.
+
+#+BEGIN_SRC zig
+   _ = printf(
+      @as([*c]const u8, @ptrCast(format_string)),
+      my_name.len,
+      @as([*c]const u8, @ptrCast(my_name)),
+  );
+#+END_SRC
+
+It also works as well.
+
+But some downsides happen when you use a C pointer instead of a Zig pointer. For example, if you try to do this:
+
+#+BEGIN_SRC zig
+    const my_name = @as([*c]const u8, @ptrCast(get_my_name()));
+    print("\n>>> my_name.len: {d}", .{my_name.len});
+#+END_SRC
+
+
+Then you have error, as ~my_name~ becomes a C pointer:
+
+#+BEGIN_SRC bash
+src/main.zig:44:46: error: type '[*c]const u8' does not support field access
+    print("\n>>> my_name.len: {d}", .{my_name.len});
+                                      ~~~~~~~^~~~
+#+END_SRC
+
