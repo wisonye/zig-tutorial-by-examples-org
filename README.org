@@ -48,7 +48,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:comptime.org][comptime]]
 *** [[file:static-dispatch.org][Static dispatch]]
 ** [[file:interface.org][Interface and dynamic dispatch]]
-** Bits
+** [[file:bits.org][Bits]]
 ** Everything about logging
 ** logging in unit test
 ** Reader and writer
