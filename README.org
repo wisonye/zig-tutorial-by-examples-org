@@ -58,7 +58,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:builtin-type-convesion.org][Type conversion]]
 *** [[file:builtin-pointer-conversion.org][Pointer conversion]]
 ** [[file:memory.org][Memory]]
-*** Choose an allocator
+*** [[file:choose-an-allocator.org][Choose an allocator]]
 *** Print memory bytes in HEX
 ** Build System
 *** Release build
