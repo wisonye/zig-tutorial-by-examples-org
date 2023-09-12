@@ -80,7 +80,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** How to
 *** [[file:how-to-read-env.org][Read environment variable]]
 *** [[file:how-to-read-process-arguments.org][Read process arguments]]
-*** Execute command
+*** [[file:how-to-execute-command.org][Execute command]]
 *** Use ArrayList
 *** Use HashMap
 *** Handle JSON
