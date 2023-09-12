@@ -1,0 +1,215 @@
+* Import C headers
+
+You got a few options to import C header files:
+
+** Translated C header file to zig source file automatically
+
+*** Use ~@cImport~ 
+
+#+BEGIN_SRC zig
+  const c = @cImport({
+      @cDefine("_NO_CRT_STDIO_INLINE", "1");
+      @cInclude("stdio.h");
+  });
+
+  pub fn main() void {
+      _ = c.printf("hello\n");
+  }
+#+END_SRC
+
+But if you run ~zig build run~ right now, you should see the following error:
+
+#+BEGIN_SRC bash
+  zig build run
+
+  # src/main.zig:5:11: error: C import failed
+  # const c = @cImport({
+  #           ^~~~~~~~
+  # src/main.zig:5:11: note: libc headers not available; compilation does not link against libc
+  # referenced by:
+  #
+  # /home/wison/zig/zig-temp/zig-cache/o/15ae82694dc7de6c594e7327cdc9d758/cimport.h:2:10: error: 'stdio.h' file not found
+  # #include <stdio.h>
+#+END_SRC
+
+That's a linker error, as you didn't link to =libC= library. So, add the following settings to =build.zig=:
+
+#+BEGIN_SRC zig
+  const exe = b.addExecutable(.{
+      // ...Ignore the code content here
+  });
+
+  // Tell Zig compiler to compile the LibC from source code and link to it!!!
+  exe.linkLibC();
+#+END_SRC
+
+Now, it should work as expected.
+
+
+**** But what's happening under the hood when using ~@cImport~???
+
+If you run the following commands, then you should figure out how it works:
+
+#+BEGIN_SRC bash
+  rm -rf zig-cache/ zig-out
+  zig build run --verbose-cimport
+  # zig build-exe temp Debug native: error: info(compilation): C import source:
+  # /home/wison/zig/zig-temp/zig-cache/o/a214bd75999bf39bc88e4c07343d1d7f/cimport.h
+  # info(compilation): C import .d file: /home/wison/zig/zig-temp/zig-cache/o/a214bd75999bf39bc88e4c07343d1d7f/cimport.h.d
+  # info(compilation): C import output: /home/wison/zig/zig-temp/zig-cache/o/9c63f525e0098f951344306ee0ab79f7/cimport.zig
+#+END_SRC
+
+You can ignore the =error=, that's NOT the real error, just the compiler logging prints out to =stderr=:)
+
+As you can see, it does a few steps above:
+
+
+***** 1. Create a temporary C header file and copy all of your ~@cImport~ content into it
+
+If you print the header file out:
+
+#+BEGIN_SRC bash
+  cat /home/wison/zig/zig-temp/zig-cache/o/a214bd75999bf39bc88e4c07343d1d7f/cimport.h
+#+END_SRC
+
+Then you got this:
+
+#+BEGIN_SRC c
+  #define _NO_CRT_STDIO_INLINE 1
+  #include <stdio.h>
+#+END_SRC
+
+
+***** 2. Create the ~.d~ file whihc is the list of file dependencies
+
+If you print the dependencies file out:
+
+#+BEGIN_SRC bash
+  cat /home/wison/zig/zig-temp/zig-cache/o/a214bd75999bf39bc88e4c07343d1d7f/cimport.h.d
+#+END_SRC
+
+Then you got this:
+
+#+BEGIN_SRC c
+  cimport.o: \
+    /home/wison/zig/zig-temp/zig-cache/o/a214bd75999bf39bc88e4c07343d1d7f/cimport.h \
+    /usr/include/stdio.h /usr/include/bits/libc-header-start.h \
+    /usr/include/features.h /usr/include/features-time64.h \
+    /usr/include/bits/wordsize.h /usr/include/bits/timesize.h \
+    /usr/include/stdc-predef.h /usr/include/sys/cdefs.h \
+    /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
+    /usr/include/gnu/stubs-64.h \
+    /home/wison/my-shell/zig-nightly/lib/include/stddef.h \
+    /home/wison/my-shell/zig-nightly/lib/include/stdarg.h \
+    /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+    /usr/include/bits/time64.h /usr/include/bits/types/__fpos_t.h \
+    /usr/include/bits/types/__mbstate_t.h \
+    /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h \
+    /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h \
+    /usr/include/bits/types/cookie_io_functions_t.h \
+    /usr/include/bits/stdio_lim.h /usr/include/bits/floatn.h \
+    /usr/include/bits/floatn-common.h
+#+END_SRC
+
+
+***** 3. Translate the C header into temporary Zig file
+
+This ~.zig~ includes all C header types/functions but in =Zig= syntax.
+
+If you print it out, you got a very long zig source code, as it includes all translated zig code from ~stdio.h~ and it's dependencies:
+
+#+BEGIN_SRC zig
+  // Ignore above ...
+  pub extern fn fprintf(__stream: [*c]FILE, __format: [*c]const u8, ...) c_int;
+  pub extern fn printf(__format: [*c]const u8, ...) c_int;
+  pub extern fn sprintf(__s: [*c]u8, __format: [*c]const u8, ...) c_int;
+  // Ignore below ...
+#+END_SRC
+
+That's reason why your ~_ = c.printf("hello\n");~ can be compiled and run.
+
+
+*** Use ~zig translate-c~
+
+For example, create the ~src/temp.h~ to contain the following header content:
+
+#+BEGIN_SRC c
+  #define _NO_CRT_STDIO_INLINE 1
+  #include <stdio.h>
+#+END_SRC
+
+Then you can use =zig translate-c= to convert C code to Zig code like this:
+
+#+BEGIN_SRC bash
+  zig translate-c -I/usr/include src/temp.h > src/translated_stdio.zig
+#+END_SRC
+
+So, that ~src/stdio.zig~ should have the same translated zig source with ~/home/wison/zig/zig-temp/zig-cache/o/9c63f525e0098f951344306ee0ab79f7/cimport.zig~ which was created by the ~@cImport~.
+
+And then, you can import and use it: ~const my_c_stdio = @import("translated_stdio");~ 
+
+
+*** So, what different between ~@cImport~ and ~zig translate-c~ and when to use which one???
+
+As you can see, ~@cImport~ and ~zig translate-c~ use the same underlying C translation functionality, so on a technical level they are equivalent.
+
+In practice, ~@cImport~ is useful as a way to quickly and easily access numeric constants, typedefs, and record types without needing any extra setup.
+
+But if you want more controls, you should pick the ~zig translate-c~, as it offers you the extra benefits:
+
+**** You got more options to handle the translation process:
+
+| Flags   | Description                                                                                                     |
+|---------+-----------------------------------------------------------------------------------------------------------------|
+| ~-I~      | Specify a search directory for include files. May be used multiple times.                                       |
+|         | Equivalent to clang's ~-I~ flag.                                                                                  |
+|         | The current directory is not included by default; use ~-I.~ to include it.                                        |
+|         |                                                                                                                 |
+| ~-D~      | Define a preprocessor macro. Equivalent to clang's -D flag.                                                     |
+|         |                                                                                                                 |
+| ~-cflags~ | Pass arbitrary additional command line flags to clang. Note: the list of flags must end with                    |
+|         |                                                                                                                 |
+| ~-target~ | The target triple for the translated Zig code. If no target is specified, the current host target will be used. |
+|         |                                                                                                                 |
+
+
+For example, if you add my custom macro like this:
+
+#+BEGIN_SRC bash
+  zig translate-c -DMY_MACRO=1 -I/usr/include src/temp.h > src/translated_stdio.zig
+#+END_SRC
+
+It generates the following extra content in zig source code:
+
+#+BEGIN_SRC zig
+  pub const MY_MACRO = @as(c_int, 1);
+#+END_SRC
+
+
+**** You can modified the translated zig source code to fit your need
+
+One special case is taht you can change ~[*c]T~ pointers to ~[*]T~ or ~*T~ pointers for improved type safety. Plz have a look at the [[file:deal-with-c-pointer.org][Deal with C pointers]] chapter for more details.
+
+
+
+** Translated C header file to zig source file manually
+
+As you see above, no matter use either ~@cImport~ or ~zig translate-c~, the final purpose is the same: generating the `extern` types/variables/functions that you can use in your zig source code.
+
+So, that said if you only use a few types/variables/functions, you're able to write them by yourself.
+
+For example:
+
+#+BEGIN_SRC zig
+  pub extern fn printf(__format: [*c]const u8, ...) c_int;
+
+  pub fn main() void {
+      const demo_name = "Demo";
+      const my_c_printf_format_string = "\n>>> Just a test, demo name: %s";
+      _ = printf(my_c_printf_format_string, demo_name);
+  }
+#+END_SRC
+
+This works fine without any C header file import:)
+
+Either ~@cImport~ or ~zig translate-c~ just an option, NOT a must:)

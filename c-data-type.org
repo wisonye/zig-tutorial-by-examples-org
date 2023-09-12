@@ -1,0 +1,15 @@
+* C data type
+
+| Zig Data Type | C Data Type        |
+|---------------+--------------------|
+| =c_char=        | =char=               |
+| =c_short=       | =short=              |
+| =c_ushort=      | =unsigned short=     |
+| =c_int=         | =int=                |
+| =c_uint=        | =unsigned int=       |
+| =c_long=        | =long=               |
+| =c_ulong=       | =unsigned long=      |
+| =c_longlong=    | =long long=          |
+| =c_ulonglong=   | =unsigned long long= |
+| =c_longdouble=  | =long double=        |
+| =anyopaque=     | =void=               |
