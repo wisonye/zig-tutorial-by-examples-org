@@ -90,8 +90,6 @@ So, it works.
 
 If you can't modify the translated zig source code (e.g. you're using third-party libraries), then you have to convert your ~*T~ or ~[*]T~ Zig pointer to the ~[*c]T~ C pointer.
 
-All ~[]T/*T/[*]T~ are able to coerce to ~[*c]T~.
-
 #+BEGIN_SRC zig
    _ = printf(
       @as([*c]const u8, @ptrCast(format_string)),
@@ -109,7 +107,6 @@ But some downsides happen when you use a C pointer instead of a Zig pointer. For
     print("\n>>> my_name.len: {d}", .{my_name.len});
 #+END_SRC
 
-
 Then you have error, as ~my_name~ becomes a C pointer:
 
 #+BEGIN_SRC bash
@@ -117,4 +114,21 @@ src/main.zig:44:46: error: type '[*c]const u8' does not support field access
     print("\n>>> my_name.len: {d}", .{my_name.len});
                                       ~~~~~~~^~~~
 #+END_SRC
+
+
+** 3. C pointer conversion rules
+
+- ~[]T/*T/[*]T~ are able to coerce to ~[*c]T~
+- ~[*c]T~ allows to be ~null~, that's the optional pointer in Zig
+
+That's why the following pointer conversions will work:
+
+| Zig pointer                               | C Pointer |
+|-------------------------------------------+-----------|
+| ~[]T~   (slice of T)                        | ~[*c]T~     |
+| ~*T~    (single item pointer of T)          | ~[*c]T~     |
+| ~[*]T~  (many item pointer of T)            | ~[*c]T~     |
+| ~?[]T~  (optional slice of T)               | ~[*c]T~     |
+| ~?*T~   (optional single item pointer of T) | ~[*c]T~     |
+| ~?[*]T~ (optional many item pointer of T)   | ~[*c]T~     |
 
