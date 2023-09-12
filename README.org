@@ -60,12 +60,12 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** [[file:memory.org][Memory]]
 *** [[file:choose-an-allocator.org][Choose an allocator]]
 *** [[file:print-memory-in-hex.org][Print memory bytes in HEX]]
-** Build System
-*** Release build
-*** Conditional compilation
-*** Build multiple targets
-*** Customize build step
-*** A pitfall when using dependOn
+** [[file:build-system.org][Build System]]
+*** [[file:how-to-create-release-build.org][Release build]]
+*** [[file:conditional-compilation.org][Conditional compilation]]
+*** [[file:build-multiple-targets.org][Build multiple targets]]
+*** [[file:custom-build-step.org][Customize build step]]
+*** [[file:a-pitfall-when-using-dependon.org][A pitfall when using dependOn]]
 *** Add existing library
 *** [[file:compile-c-project.org][Compile C project]]
 *** Modules and dependencies

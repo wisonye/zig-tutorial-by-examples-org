@@ -1,0 +1,38 @@
+* Build System
+
+Here are the simple steps to create a =Zig= project:
+
+#+BEGIN_SRC bash
+  mkdir my-zig-project && cd my-zig-project
+
+  # Create a executable/Binary project
+  zig init-exe
+
+  # Create a library project
+  zig init-lib
+#+END_SRC
+
+
+
+It creates the following folder structure:
+
+#+BEGIN_SRC bash
+  tree -L 1
+  .
+  ├── build.zig   # Build script configuration
+  ├── src         # Your zig source code
+  ├── zig-cache   # Build cache
+  └── zig-out     # Default output folder
+#+END_SRC
+
+
+
+By default, you can run the following commands:
+
+| Command        | Description                                                             |
+|----------------+-------------------------------------------------------------------------|
+| ~zig build~      | Build the executable/library and install to =zig-out/bin= or =zig-out/lib=. |
+| ~zig build run~  | Run the installed executable, only works for =zig init-exe= project.      |
+| ~zig build test~ | Run the unit test.                                                      |
+|                |                                                                         |
+
