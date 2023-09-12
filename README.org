@@ -47,8 +47,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 ** =comptime= and generic
 *** [[file:comptime.org][comptime]]
 *** [[file:static-dispatch.org][Static dispatch]]
-*** Convert data type example
-** Interface and dynamic dispatch
+** [[file:interface.org][Interface and dynamic dispatch]]
 ** Bits
 ** Everything about logging
 ** logging in unit test
