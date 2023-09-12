@@ -82,6 +82,88 @@ Alignment depends on the CPU architecture, but is always a power of two, and les
 | ~@alignCast~ |                                                                    |
 
 
-~*T~ is really a shorthand for ~*align(@alignOf(T)) T~.
+And you need to keep that in mind:
 
-~void*~ in =Zig= is ~?*anyopaque~ can point to any individual byte in memory, which means it has alignment 1 (byte).
++ 1) ~*T~ is really a shorthand for ~*align(@alignOf(T)) T~.
+
++ 2) ~void*~ in =Zig= is ~?*anyopaque~ can point to any individual byte in memory, which means it has alignment 1 (byte).
+
+
+Let's take a look at an example, suppose that you have a struct like below and do a heap allocation via standard C API:
+
+#+BEGIN_SRC zig
+  const MyResult = struct {
+      success_code: u16,
+      error_code: u16,
+  };
+
+  pub fn main() void {
+      //
+      // Heap allocation via standard libc style, it returns 'void *' (without type info)
+      //
+      const my_result_ptr = std.c.malloc(@sizeOf(MyResult));
+      print("\n>>> my_result_ptr, type: {} , address: {*}", .{
+          @TypeOf(my_result_ptr),
+          my_result_ptr,
+      });
+  }
+#+END_SRC
+
+So, the ~my_result_ptr~ pointer type is ~?*anyopaque~ which mean ~void *~. The above code runs fine, but if you try to convert the ~my_result_ptr~ to the ~*MyResult~ like this:
+
+
+#+BEGIN_SRC zig
+  const my_result_ptr = @as(
+      ,*MyResult,
+      @ptrCast(std.c.malloc(@sizeOf(MyResult))),
+  );
+  print("\n>>> my_result_ptr, type: {} , address: {*}", .{
+      @TypeOf(my_result_ptr),
+      my_result_ptr,
+  });
+#+END_SRC
+
+It fails with the following error:
+
+#+BEGIN_SRC bash
+  src/main.zig:17:9: error: cast increases pointer alignment
+          @ptrCast(std.c.malloc(@sizeOf(MyResult))),
+          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  src/main.zig:17:30: note: '?*anyopaque' has alignment '1'
+          @ptrCast(std.c.malloc(@sizeOf(MyResult))),
+                   ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+  src/main.zig:17:9: note: '*main.MyResult' has alignment '2'
+  src/main.zig:17:9: note: use @alignCast to assert pointer alignment
+#+END_SRC
+
+
+That's because the alignment is different between ~*MyResult~ and ~?anyopaque (void *)~. In that case, you have to combine ~@alignCast~ and ~@ptrCast~ together like this:
+
+#+BEGIN_SRC zig
+  pub fn main() void {
+      const my_result_ptr = @as(
+          *MyResult,
+          @alignCast(@ptrCast(std.c.malloc(@sizeOf(MyResult)))),
+      );
+      print("\n>>> my_result_ptr, type: {} , address: {*}", .{
+          @TypeOf(my_result_ptr),
+          my_result_ptr,
+      });
+
+      my_result_ptr.* = MyResult{
+          .success_code = 888,
+          .error_code = 999,
+      };
+      print("\n>>> my_result_ptr, address: {*}, value: {any}", .{
+          my_result_ptr,
+          my_result_ptr.*,
+      });
+  }
+#+END_SRC
+
+Then it works:
+
+#+BEGIN_SRC bash
+  # >>> my_result_ptr, type: *main.MyResult , address: main.MyResult@85e2a0
+  # >>> my_result_ptr, address: main.MyResult@85e2a0, value: main.MyResult{ .success_code = 888, .error_code = 999 }⏎
+#+END_SRC
