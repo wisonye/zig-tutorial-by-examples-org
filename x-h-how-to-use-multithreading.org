@@ -59,7 +59,7 @@ It's very easy to use multithreading in =Zig=, here is an example:
       }
 
       //
-          // Schedule a task (function) to run via spawned thread
+      // Schedule a task (function) to run via spawned thread
       //
       fn schedule_task(self: *Self, task_fn: anytype, task_args: anytype) !void {
           return try self.thread_pool.append(try std.Thread.spawn(

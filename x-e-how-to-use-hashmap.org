@@ -18,7 +18,7 @@ If you want to use array as value, then try ~std.ArrayHashMap~ and its wrapper ~
   }
 
   //
-      // Create `HashMap`: stirng ([]const u8) as key, `Person` as value
+  // Create `HashMap`: stirng ([]const u8) as key, `Person` as value
   //
   var empty_map = std.StringHashMap(Person).init(allocator);
   defer empty_map.deinit();
@@ -44,7 +44,7 @@ In this case, the ~Person.get_fullname()~ use heap allocation.
       const Self = @This();
 
       //
-          // Heap allocated fullname
+      // Heap allocated fullname
       //
       pub fn get_fullname(self: *const Self, allocator: std.mem.Allocator) []u8 {
           return std.fmt.allocPrint(
