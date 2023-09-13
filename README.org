@@ -86,4 +86,4 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** [[file:how-to-handle-json.org][Handle JSON]]
 *** [[file:how-to-iterator-pattern.org][Iterator pattern]]
 *** [[file:how-to-use-multithreading.org][Multithreading]]
-*** Send HTTP request
+*** [[file:how-to-send-http-request.org][Send HTTP request]]
