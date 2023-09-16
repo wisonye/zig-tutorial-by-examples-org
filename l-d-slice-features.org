@@ -74,11 +74,40 @@ Don't feel surprise when you see the result of ~@TypeOf(slice_var)~ is different
 *** ~[]T.ptr~ gets back ~[*]T~
 
 #+BEGIN_SRC zig
-  var buf: [32]u8 = undefined;
-  print("buf is at address {*}\n", .{ &buf });
+  var buf = [_]u8{0x00} ** 30;
+  print("buf is at address {*}\n", .{&buf});
 
-  const p = @as([]const u8, &buf);
-  print("p points to {*}, with length {}\n", .{ p.ptr, p.len });
+  const p = &buf;
+  print("p\t\tpoints to {*}, type: {}, len: {}\n", .{
+      p.ptr,
+      @TypeOf(p),
+      p.len,
+  });
+
+  const p2: []const u8 = &buf;
+  print("p2\t\tpoints to {*}, type: {}, len: {}\n", .{
+      p2.ptr,
+      @TypeOf(p2),
+      p2.len,
+  });
+
+  //
+  // Get back the pointer from slice, but pointer type isn't `*[30]u8` anymore.
+  // It's `[*]const u8` (pointer to many item) any lost the length!
+  //
+  const back_to_ptr = p2.ptr;
+  print("back_to_ptr\tpoints to {*}, type: {}, len: unknown\n", .{
+      back_to_ptr,
+      @TypeOf(back_to_ptr),
+      //
+      // error: type '[*]const u8' does not support field access
+      //
+      // back_to_ptr.len,
+  });
 #+END_SRC
 
-
+#+BEGIN_SRC bash
+  # p               points to u8@7ffee1132c80, type: *[30]u8, len: 30
+  # p2              points to u8@7ffee1132c80, type: []const u8, len: 30
+  # back_to_ptr     points to u8@7ffee1132c80, type: [*]const u8, len: unknown
+#+END_SRC
