@@ -2,20 +2,40 @@
 
 Since =0.11=, =zig= brings the natively supported package manager, so you can add dependencies by adding =module= from another =zig= project.
 
+Here is the official doc: https://ziglang.org/download/0.11.0/release-notes.html#Package-Management
+
+Summarises steps:
 
 ** 1. How to export module from your package
 
 If you want another package (consumer package) that is able to use  your current zig code, then you need to create a public =Module= like this:
 
 #+BEGIN_SRC zig
+  //
+  // Create public module
+  //
   const my_module = b.addModule("my_module_name_here", .{
       .source_file = .{ .path = "src/my_module_filename.zig" },
       .dependencies = &.{},
   });
 #+END_SRC
 
-And you have to make your repo become =public=, otherwise, it won't work!!!
+You should make your GitHub repo become =public=, as usually, consumer package will have a ~url~ points to your GitHub repo as their package dependency.
 
+Btw, regarding binary artifacts: any artifact which is installed (for instance, via ~std.Build.installArtifact~) is exposed to dependant packages!!!
+
+
+In some cases, you want a private module which only visible inside your own package (project scope), then you use ~createModule~ instead of ~addModule~:
+
+#+BEGIN_SRC zig
+  //
+  // Create private module
+  //
+  const logger_module = b.createModule(.{
+      .source_file = .{ .path = "./src/logger_utils.zig" },
+      .dependencies = &.{},
+  });
+#+END_SRC
 
 
 ** 2. How to export all structs/functions in a single module
@@ -92,7 +112,7 @@ You need to go through the following steps:
 
 This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for your package:
 
-#+BEGIN_SRC zon
+#+BEGIN_SRC zig
 .{
     .name = "machine-learning-demo-zig",
     .version = "0.1.0",
@@ -109,7 +129,7 @@ This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for y
 }
 #+END_SRC
 
-- ~.name~: Just a string, it doesn't matter.
+- ~.name~: Your current package name, just a string, it doesn't matter.
 
 - ~.version~: Doesn't matter at this moment.
 
@@ -149,7 +169,7 @@ This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for y
       # note: expected .hash = "12209840ee5d705cea5b236679be28090c4b4fd28a998892c7feba5a1c779723dd4f",
     #+END_SRC
 
-    So, you can add it there:
+    So, you can copy that =.hash= line and add it to your dependency:
 
     #+BEGIN_SRC zon
     .z_utils = .{
@@ -161,6 +181,8 @@ This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for y
 
 
 *** 2) Add the following stuff into your ~build.zig~
+
+In the build script, dependencies can be referenced using the ~std.Build.dependency~ function. This takes the name of a dependency (as given in =build.zig.zon=) and returns a ~*std.Build.Dependency~. You can then use the artifact and module methods on this object to get binary artifacts and Zig modules exposed by the dependency.
 
 #+BEGIN_SRC zig
   //

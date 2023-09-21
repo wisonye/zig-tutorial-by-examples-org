@@ -36,3 +36,13 @@ By default, you can run the following commands:
 | ~zig build test~ | Run the unit test.                                                      |
 |                |                                                                         |
 
+
+** About =artifact=
+
+You’ll see the word =artifact= used often in the build process. One way to grasp =artifact= is to think it as the output of the build:
+
++ If you are building a shared library, the =.so= file is the artifact
+
++ If you are building a static library, the =.a= file is the artifact
+
++ If you are building an executable, the actual execuable is the artifact.
