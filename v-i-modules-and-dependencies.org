@@ -103,7 +103,7 @@ In the consumer package, it imports like this:
 
 
 
-** 3. How to import modules from another package
+** 3. How to import modules from another package by ~build.zig.zon~
 
 You need to go through the following steps:
 
@@ -199,6 +199,59 @@ In the build script, dependencies can be referenced using the ~std.Build.depende
 
 
 - ~b.dependency("z_utils")~: that ~"z_utils"~ is the dependency name which comes from ~.z_utils = .{}~ in the ~build.zig.zon~ under ~dependencies~ struct.
+
+- ~z_utils_dep.module("z_utils");~: that ~"z_utils"~ is the module name which comes from the dependency package's ~build.zig~:
+
+  #+BEGIN_SRC zig
+    const z_utils_module = b.addModule("z_utils", .{
+  #+END_SRC
+
+
+*** 3) Import the module and use it
+
+#+BEGIN_SRC zig
+  const random = @import("z_utils").Random;
+  const bits = @import("z_utils").Bits;
+#+END_SRC
+
+
+
+** 4. How to import modules from another package by local folder without ~build.zig.zon~
+
+You need to go through the following steps:
+
+*** 1) Copy another exsiting zig project folder into your current project root folder
+
+You can directly copy to current project root folder or add them as =git submodule=:
+
+#+BEGIN_SRC bash
+  git submodule add YOUR_REPO_URL 
+#+END_SRC
+
+
+*** 2) Add the following stuff into your ~build.zig~
+
+Use ~std.Build.anonymousDependency~ instead of ~std.Build.dependency~ to import local dependencies:
+
+#+BEGIN_SRC zig
+  const z_utils_dep = b.anonymousDependency(
+      //
+      // Your sub project or git submodule folder relative path to current root folder
+      //
+      "z-utils",
+      //
+      // Import the dependency `build.zig`
+      //
+      @import("z-utils/build.zig"),
+      .{
+          .target = target,
+          .optimize = optimize,
+      },
+  );
+
+  const z_utils_module = z_utils_dep.module("z_utils");
+  exe.addModule("z_utils", z_utils_module);
+#+END_SRC
 
 - ~z_utils_dep.module("z_utils");~: that ~"z_utils"~ is the module name which comes from the dependency package's ~build.zig~:
 
