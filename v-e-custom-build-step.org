@@ -115,3 +115,149 @@ So you run try the ~echo~ step like below, arguments follow by ~--~:
   # Provied arguments:  No arguments provided.
 #+END_SRC
 
+
+** More complex step
+
+You can replace the ~step.makeFn~ to implement very complicated building process logic.
+
+For example, try to create a custom step to do the following stuffs:
+
+- Generate the ~zig-cache/cmake/CMakeLists.txt~ with custom content
+- Copy ~src/main.c~ to ~zig-cache/cmake/src/main.c~
+- Run ~cmake~ based on the configure file
+
+#+BEGIN_SRC zig
+  var complicated_step = b.step("custom-build", "Custom build step with complicated logic");
+
+  //
+  // Provide your own make function.
+  //
+  complicated_step.makeFn = my_make_fn;
+
+  //
+  // If you enable this, that means `zig build` will run this step as default step
+  // instead of you run `zig build custom-build` explicitly.
+  //
+  // b.default_step = complicated_step;
+#+END_SRC
+
+Here is the custom make function:
+
+#+BEGIN_SRC zig
+   fn my_make_fn(step: *std.build.Step, prog_node: *std.Progress.Node) anyerror!void {
+      _ = prog_node;
+      print("\n>>> [ my_make_fn ] - Run custom step", .{});
+
+      const binary_name = step.name;
+      const builder = step.owner;
+      const build_root_folder = builder.build_root.path.?;
+      const cache_folder = builder.cache_root.path.?;
+      const build_root_dir = try std.fs.openDirAbsolute(build_root_folder, .{});
+      const cache_root_dir = try build_root_dir.openDir(cache_folder, .{});
+
+      print("\n>>> [ my_make_fn ] - build_root_folder: {s}", .{build_root_folder});
+      print("\n>>> [ my_make_fn ] - cache_folder: {s}", .{cache_folder});
+
+      // Create build directory in cache, and CMakeLists.txt file
+      cache_root_dir.makePath("cmake/build") catch {};
+      cache_root_dir.makePath("cmake/src") catch {};
+      const cmake_dir = try cache_root_dir.openDir("cmake", .{});
+      const cmake_cfg = try cmake_dir.createFile("CMakeLists.txt", .{});
+      defer cmake_cfg.close();
+
+      print("\n>>> [ my_make_fn ] - opened cmake folder in cache", .{});
+
+      const cmake_src_dir = try cmake_dir.openDir("src", .{});
+      const src_file = builder.pathJoin(&.{ build_root_folder, "src", "main.c" });
+      print("\n>>> [ my_make_fn ] - src_file: {s}", .{src_file});
+
+      try cmake_src_dir.copyFile(src_file, cmake_src_dir, "main.c", .{});
+
+      // Fill in CMakeLists.txt file used by pico-sdk
+      const writer = cmake_cfg.writer();
+      try writer.print(
+          \\cmake_minimum_required(VERSION 3.13)
+          // \\include({s}/pico-sdk/pico_sdk_init.cmake)
+          \\project({s})
+          // \\pico_sdk_init()
+          \\add_executable({s} "src/main.c")
+          \\target_link_libraries({s} pico_stdlib)
+          \\#pico_add_extra_outputs({s})
+          \\
+      , .{
+          // PATH,
+          binary_name,
+          binary_name,
+          binary_name,
+          binary_name,
+      });
+
+      print("\n>>> [ my_make_fn ] - created 'CMakeList.txt' in cache.", .{});
+
+      var args = std.ArrayList([]const u8).init(builder.allocator);
+      defer args.deinit();
+
+      const cmake_path = builder.pathJoin(&.{
+          cache_folder,
+          "cmake",
+      });
+      const cmake_build_path = builder.pathJoin(&.{ cmake_path, "build" });
+      print("\n>>> [ my_make_fn ] - cmake_path: {s}", .{cmake_path});
+      print("\n>>> [ my_make_fn ] - cmake_build_path: {s}", .{cmake_build_path});
+
+      // Running cmake command
+      args.append("cmake") catch unreachable;
+      args.append("-S") catch unreachable;
+      args.append(cmake_path) catch unreachable;
+      args.append("-B") catch unreachable;
+      args.append(cmake_build_path) catch unreachable;
+
+      print("\n>>> [ my_make_fn ] - run 'cmake'", .{});
+      // const cmake_out = try builder.execFromStep(args.items, &self.step);
+      const cmake_output = builder.exec(args.items);
+
+      print("\n>>> [ my_make_fn ] - run 'cmake' output: {s}", .{cmake_output});
+  }
+#+END_SRC
+
+
+So, here is what you saw when running it:
+
+#+BEGIN_SRC bash
+  rm -rf zig-cache/ zig-output && zig build custom-build
+
+  # >>> [ my_make_fn ] - Run custom step
+  # >>> [ my_make_fn ] - build_root_folder: /Users/wison/c/temp
+  # >>> [ my_make_fn ] - cache_folder: /Users/wison/c/temp/zig-cache
+  # >>> [ my_make_fn ] - opened cmake folder in cache
+  # >>> [ my_make_fn ] - src_file: /Users/wison/c/temp/src/main.c
+  # >>> [ my_make_fn ] - created 'CMakeList.txt' in cache.
+  # >>> [ my_make_fn ] - cmake_path: /Users/wison/c/temp/zig-cache/cmake
+  # >>> [ my_make_fn ] - cmake_build_path: /Users/wison/c/temp/zig-cache/cmake/build
+  # >>> [ my_make_fn ] - run 'cmake'
+  # >>> [ my_make_fn ] - run 'cmake' output: -- The C compiler identification is AppleClang 12.0.5.12050022
+  # -- The CXX compiler identification is AppleClang 12.0.5.12050022
+  # -- Detecting C compiler ABI info
+  # -- Detecting C compiler ABI info - done
+  # -- Check for working C compiler: /Library/Developer/CommandLineTools/usr/bin/cc - skipped
+  # -- Detecting C compile features
+  # -- Detecting C compile features - done
+  # -- Detecting CXX compiler ABI info
+  # -- Detecting CXX compiler ABI info - done
+  # -- Check for working CXX compiler: /Library/Developer/CommandLineTools/usr/bin/c++ - skipped
+  # -- Detecting CXX compile features
+  # -- Detecting CXX compile features - done
+  # -- Configuring done (0.6s)
+  # -- Generating done (0.0s)
+  # -- Build files have been written to: /Users/wison/c/temp/zig-cache/cmake/build
+
+
+  cat zig-cache/cmake/CMakeLists.txt
+
+  # cmake_minimum_required(VERSION 3.13)
+  # project(custom-build)
+  # add_executable(custom-build "src/main.c")
+  # target_link_libraries(custom-build pico_stdlib)
+  # #pico_add_extra_outputs(custom-build)
+
+#+END_SRC
