@@ -1,0 +1,209 @@
+* =comptime= and performance
+
+=comptime= asks for both the type and value of a variable or a function MUST be known at compile time. That said you're able to ask to run some time-consuming function code in compile time and assign the result like a constant, that boots up a lot of performance usually.
+
+Let's compare a factorial implementation in 2 versions:
+
+** Runtime version
+
+For example, you want to do a factorial calculation, it would be like this:
+
+#+BEGIN_SRC zig
+  fn factorial(n: u8) u1024 {
+    var r: u1024 = 1;
+    for (1..(n + 1)) |i| {
+        r *= i;
+    }
+    return r;
+  }
+#+END_SRC
+
+That's a runtime function, it means the code will be executed at runtime ONLY!!!
+
+Here is the test code:
+
+#+BEGIN_SRC zig
+  const number = 10;
+  const result = factorial(number);
+  print("\n>>> Factorial of {d} is {d}", .{ number, result });
+#+END_SRC
+
+It prints out:
+
+#+BEGIN_SRC bash
+  # >>> Factorial of 10 is 3628800
+#+END_SRC
+
+So, here is the assembly code:
+
+#+BEGIN_SRC bash
+  llvm-objdump -d zig-out/bin/temp
+
+  # Disassembly of section __TEXT,__text:
+
+  # 0000000100000710 <_main.main>:
+  # 100000710: 55                          	pushq	%rbp
+  # 100000711: 48 89 e5                    	movq	%rsp, %rbp
+  # 100000714: 41 57                       	pushq	%r15
+  # 100000716: 41 56                       	pushq	%r14
+  # 100000718: 41 55                       	pushq	%r13
+  # 10000071a: 41 54                       	pushq	%r12
+  # 10000071c: 53                          	pushq	%rbx
+  # 10000071d: 48 81 ec a8 01 00 00        	subq	$0x1a8, %rsp            ## imm = 0x1A8
+  # 100000724: 48 8b 05 d5 68 0b 00        	movq	0xb68d5(%rip), %rax     ## 0x1000b7000 <dyld_stub_binder+0x1000b7000>
+  # 10000072b: 48 8b 00                    	movq	(%rax), %rax
+  # 10000072e: 48 89 45 d0                 	movq	%rax, -0x30(%rbp)
+  # 100000732: 48 8d bd 50 fe ff ff        	leaq	-0x1b0(%rbp), %rdi
+  # 100000739: be 0a 00 00 00              	movl	$0xa, %esi
+  10000073e: e8 ad 01 00 00              	callq	0x1000008f0 <_main.factorial>
+  # 100000743: 48 8b 85 50 fe ff ff        	movq	-0x1b0(%rbp), %rax
+  # // ... ignore the reset
+
+  00000001000008f0 <_main.factorial>:
+  # 1000008f0: 55                          	pushq	%rbp
+  # 1000008f1: 48 89 e5                    	movq	%rsp, %rbp
+  # 1000008f4: 41 57                       	pushq	%r15
+  # 1000008f6: 41 56                       	pushq	%r14
+  # // ... ignore the reset
+#+END_SRC
+
+As you can see the ~main~ function calls ~factorial~ (the ~callq~ command) and it does has the ~_main.factorial~ implementation code inside the final binary!!!.
+
+
+** Comptime version
+
+There is NO MUCH difference except by adding ~comptime~ to the function parameter and the result type becomes ~comptime_int~, that said that function call should happen in compile time:
+
+#+BEGIN_SRC zig
+   fn factorial_comptime_version(comptime n: u8) comptime_int {
+      var r: u1024 = 1;
+      for (1..(n + 1)) |i| {
+          r *= i;
+      }
+      return r;
+  }
+#+END_SRC
+
+Here is the test code:
+
+#+BEGIN_SRC zig
+  const number = 10;
+  const result = factorial_comptime_version(number);
+  print("\n>>> Factorial of {d} is {d}", .{ number, result });
+#+END_SRC
+
+It prints out the same result:
+
+#+BEGIN_SRC bash
+  # >>> Factorial of 10 is 3628800
+#+END_SRC
+
+But the assembly code is SUPER different:
+
+#+BEGIN_SRC bash
+  llvm-objdump -d zig-out/bin/temp 
+
+  # 0000000100000710 <_main.main>:
+  # 100000710: 55                          	pushq	%rbp
+  # 100000711: 48 89 e5                    	movq	%rsp, %rbp
+  # 100000714: e8 07 00 00 00              	callq	0x100000720 <_debug.print__anon_1781>
+  # 100000719: 31 c0                       	xorl	%eax, %eax
+  # 10000071b: 5d                          	popq	%rbp
+  # 10000071c: c3                          	retq
+  # 10000071d: 0f 1f 00                    	nopl	(%rax)
+
+  # 0000000100028460 <_fmt.formatIntValue__anon_7436>:
+  # 100028460: 55                          	pushq	%rbp
+  # 100028461: 48 89 e5                    	movq	%rsp, %rbp
+  # 100028464: 48 83 ec 10                 	subq	$0x10, %rsp
+  # 100028468: 49 89 d1                    	movq	%rdx, %r9
+  # 10002846b: 49 89 f0                    	movq	%rsi, %r8
+  # 10002846e: 48 89 7d f0                 	movq	%rdi, -0x10(%rbp)
+  # 100028472: c6 45 fe 37                 	movb	$0x37, -0x2(%rbp)
+  # 100028476: 66 c7 45 fc 00 5f           	movw	$0x5f00, -0x4(%rbp)     ## imm = 0x5F00
+  10002847c: be 00 5f 37 00              	movl	$0x375f00, %esi         ## imm = 0x375F00
+  # 100028481: ba 0a 00 00 00              	movl	$0xa, %edx
+  # 100028486: 31 c9                       	xorl	%ecx, %ecx
+  # 100028488: e8 83 f9 ff ff              	callq	0x100027e10 <_fmt.formatInt__anon_7443>
+#+END_SRC
+
+As you can see, there is NO ~factorial~ implementation code inside, and there is NO ~factorial~ function call happen. That's because the actual ~factorial~ function call happens in compile time and the pseudo code should look like this:
+
+#+BEGIN_SRC zig
+  const number = 10;
+  print("\n>>> Factorial of {d} is {d}", .{ number, 3628800 });
+#+END_SRC
+
+That can be proved by the highlighted assembly code:
+
+~movl	$0x375f00, %esi         ## imm = 0x375F00~,
+
+It moves the result of ~factorial~ fuction call (~3628800~ in decimal) into the register directly when calling ~_fmt.formatIntValue~ (caused by ~print~ function call), that's a lot more effiecent than before!!!
+
+That's the power of ~comptime~!
+
+
+** Performance comparison between =runtime= version and =comptime= version
+
+*** Runtime version
+
+#+BEGIN_SRC zig
+  const number = 10;
+  for (1..100000) |_| {
+      _ = factorial(number);
+  }
+#+END_SRC
+
+Build and run:
+
+#+BEGIN_SRC bash
+  zig build
+
+  time ./zig-out/bin/temp
+
+  # ________________________________________________________
+  # Executed in  145.98 millis    fish           external
+  #    usr time  143.39 millis   78.00 micros  143.31 millis
+  #    sys time    1.41 millis  560.00 micros    0.85 millis
+#+END_SRC
+
+
+As you can see it takes about =146= ms.
+
+
+*** Comptime version
+
+#+BEGIN_SRC zig
+  const number = 10;
+  for (1..100000) |_| {
+      _ = factorial_comptime_version(number);
+  }
+#+END_SRC
+
+
+Build and run:
+
+#+BEGIN_SRC bash
+  zig build
+
+  time ./zig-out/bin/temp
+
+  # ________________________________________________________
+  # Executed in    3.50 millis    fish           external
+  #    usr time    1.11 millis   67.00 micros    1.04 millis
+  #    sys time    1.24 millis  449.00 micros    0.79 millis
+#+END_SRC
+
+
+As you can see it takes only ~3.5~ ms, that's around ~48~ times faster than the runtime version!!!
+
+Btw, actually, you can fore a runtime function to be called at compile time, e.g. the following:
+
+#+BEGIN_SRC zig
+  const number = 10;
+  for (1..100000) |_| {
+      _ = comptime factorial(number);
+  }
+#+END_SRC
+
+That's a ~comptime expression~, it has the same result as the comptime version output and performance as well.
