@@ -1,0 +1,104 @@
+* =comptime= for source code checking purposes
+
+The other useful case by using =comptime= is for checking the function call, if it doesn't call like expected, you can emit a compile-time error to avoid the potential bug.
+
+Here is the example:
+
+#+BEGIN_SRC zig
+  const InterruptCallback = *const fn (gpio: u32, event_mask: u32) void;
+
+  //
+  //
+  //
+  const TouchButtonConfig = struct {
+      use_interrupt: bool,
+      interrupt_callback: ?InterruptCallback,
+
+      const Self = @This();
+
+      ///
+      ///
+      ///
+      pub fn init(
+          comptime use_interrupt: bool,
+          comptime interrupt_callback: ?InterruptCallback,
+      ) !Self {
+          //
+          // This should be an compile time error to stop potential bug!!!
+          //
+          if (use_interrupt == true and interrupt_callback == null) {
+              @compileError("'interrupt_callback' has to be provided when 'use_interrupt' set to 'true'.");
+          }
+
+          return Self{
+              .use_interrupt = use_interrupt,
+              .interrupt_callback = interrupt_callback,
+          };
+      }
+
+      ///
+      ///
+      ///
+      pub fn debug_print(self: *const Self) void {
+          print("\n>>> [ TouchButtonConfig > debug_print ] - {{\n\tuse_interrupt: {s},\n\tinterrupt_callback: {s}\n}}", .{
+              if (self.use_interrupt) "Yes" else "No",
+              if (self.interrupt_callback != null) "Already set" else "NULL",
+          });
+      }
+  };
+#+END_SRC
+
+For the case that you set ~use_interrupt~ to ~true~ but missing the ~interrupt_callback~ function, there is no way your program can run correctly, that bug should be discovered in compile time if possible!!!
+
+To do that, you have to make the ~init~ function accept ~comptime~ parameters and emit a compile time error by calling the ~compileError~ function like above.
+
+
+Here is the test code:
+
+#+BEGIN_SRC zig
+  pub fn main() !void {
+      //
+      // This works.
+      //
+      const config1 = try TouchButtonConfig.init(false, null);
+      config1.debug_print();
+
+      //
+      // This works.
+      //
+      const config2 = try TouchButtonConfig.init(true, my_interrupt_callback);
+      config2.debug_print();
+
+      //
+      // This should cause compile error.
+      //
+      const error_case_config = try TouchButtonConfig.init(true, null);
+      error_case_config.debug_print();
+  }
+
+  fn my_interrupt_callback(gpio: u32, event_mask: u32) void {
+      _ = event_mask;
+      _ = gpio;
+      print("\n>>> my_interrupt_callback", .{});
+  }
+#+END_SRC
+
+Compile time error prints out like below:
+
+#+BEGIN_SRC bash
+  zig build run
+
+  # run transitive failure
+  # └─ run temp transitive failure
+  #    ├─ zig build-exe temp Debug native 1 errors
+  #    └─ install transitive failure
+  #       └─ install temp transitive failure
+  #          └─ zig build-exe temp Debug native (+1 more reused dependencies)
+  # src/main.zig:73:13: error: 'interrupt_callback' has to be provided when 'use_interrupt' set to 'true'.
+  #             @compileError("'interrupt_callback' has to be provided when 'use_interrupt' set to 'true'.");
+  #             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # referenced by:
+  #     main: src/main.zig:111:57
+  #     callMain: /Users/wison/my-shell/zig-nightly/lib/std/start.zig:574:32
+  #     remaining reference traces hidden; use '-freference-trace' to see all reference traces
+#+END_SRC

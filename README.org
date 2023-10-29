@@ -50,6 +50,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 **** 15.2. [[file:o-a-comptime.org][comptime and generic]]
 **** 15.3. [[file:o-b-static-dispatch.org][Static dispatch]]
 **** 15.4. [[file:o-c-interface.org][Interface and dynamic dispatch]]
+**** 15.5. [[file:o-e-comptime-for-source-code-checking-purpose.org][comptime for source code checking purposes]]
 *** 16. [[file:p-bits.org][Bits]]
 *** 17. [[file:q-a-everything-about-logging.org][Everything about logging]]
 **** 17.1 [[file:q-b-logging-in-unit-test.org][logging in unit test]]
