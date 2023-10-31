@@ -72,17 +72,15 @@ For example, you want to compile some code block based on whethere ~enable_gap_b
   // Extra build option
   //
   const build_options = b.addOptions();
-  build_options.addOption(
-      bool,
-      "enable_gap_buffer_debugging",
-      b.option(
-          bool,
-          "enable_gap_buffer_debugging",
-          "Enable GapBuffer debugging or not",
-      ) orelse false,
-  );
+  build_options.addOption(bool, "enable_debug_log", false);
+  build_options.addOption(bool, "enable_gap_buffer_debugging", false);
 
-  // Make sure to add `build_options`, otherwise, it won't work!!!
+  // 
+  // `build_options` is the module name, then you can use it to import
+  // your build options, e.g. `@import("build_options")`.
+  //
+  // You can name it whatever you want, just make sure they're a match!!!
+  // 
   exe.addOptions("build_options", build_options);
 #+END_SRC
 
@@ -97,12 +95,12 @@ So, that build option will print out when you you run =zig build --help=:
 
 
 
-*** B. Now, you can import ~build_options~ and check the compile time value
+*** B. Now, you can import ~module name~ and check the compile time value
 
 #+BEGIN_SRC zig
   //
-  // If you don't have `exe.addOptions("build_options", build_options);`,
-  // then this import will fail!!!
+  // Make sure "build_options" is the same module name when you call
+  // `addOptions("YOUR_MODULE_NAME_HERE", ...);`
   //
   const build_options = @import("build_options");
 
@@ -137,17 +135,14 @@ Also, the ~debug_status~ field only exists when ~enable_debugging~ is defined, h
   // Extra build option
   //
   const build_options = b.addOptions();
-  build_options.addOption(
-      bool,
-      "enable_debugging",
-      b.option(
-          bool,
-          "enable_debugging",
-          "Enable debugging or not",
-      ) orelse false,
-  );
+  build_options.addOption(bool, "enable_debugging", false);
 
-  // Make sure to add `build_options`, otherwise, it won't work!!!
+  // 
+  // `build_options` is the module name, then you can use it to import
+  // your build options, e.g. `@import("build_options")`.
+  //
+  // You can name it whatever you want, just make sure they're a match!!!
+  // 
   exe.addOptions("build_options", build_options);
 #+END_SRC
 
