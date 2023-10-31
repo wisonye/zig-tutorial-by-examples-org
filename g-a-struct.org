@@ -53,8 +53,6 @@
 
 =Zig= has an ~anytype~ type!!!
 
-*** Anonymous struct
-
 Anonymous struct without field name is =tuples=
 
 #+BEGIN_SRC zig
@@ -82,6 +80,13 @@ Anonymous struct without field name is =tuples=
   # >>>[ Struct - dump_struct ] - anytype struct's type: struct{comptime name: *const [5:0]u8 = "Hey:)", comptime is_zig_cool: bool = true}⏎
   # >>>[ Struct - dump_struct ] - anytype struct's type: tuple{comptime *const [5:0]u8 = "Hey:)", comptime bool = true}
 #+END_SRC
+
+
+** Struct doesn't support =private= field
+
+You can have private (non-public) variable and function in side a struct, but there is NO private field concept in =Zig=
+
+Here is the explanation by =Andrew= in the [[https://github.com/ziglang/zig/issues/9909#issuecomment-942686366][Proposal: Private Fields #9909]]
 
 
 * Zero init on ~struct~
