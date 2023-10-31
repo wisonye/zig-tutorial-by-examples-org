@@ -84,7 +84,7 @@ Anonymous struct without field name is =tuples=
 
 ** Struct doesn't support =private= field
 
-You can have private (non-public) variable and function in side a struct, but there is NO private field concept in =Zig=
+You can have private (non-public) variables and functions inside a struct, but there is NO private field concept in =Zig=.
 
 Here is the explanation by =Andrew= in the [[https://github.com/ziglang/zig/issues/9909#issuecomment-942686366][Proposal: Private Fields #9909]]
 
