@@ -72,8 +72,20 @@ For example, you want to compile some code block based on whethere ~enable_gap_b
   // Extra build option
   //
   const build_options = b.addOptions();
-  build_options.addOption(bool, "enable_debug_log", false);
-  build_options.addOption(bool, "enable_gap_buffer_debugging", false);
+  build_options.addOption(
+      bool,                            // Option data type
+      "enable_debug_log",              // Option name
+      //
+      // If you want this option to be available as a project-scoped
+      // option, then you have to use `Build.option()` to create
+      // the default option value!!!
+      //
+      b.option(                        
+          bool,                        // Option data type
+          "enable_debug_log",          // Option name
+          "Enable debug log or not.",  // Option description
+      ) orelse false,
+  );
 
   // 
   // `build_options` is the module name, then you can use it to import
@@ -88,9 +100,10 @@ For example, you want to compile some code block based on whethere ~enable_gap_b
 So, that build option will print out when you you run =zig build --help=:
 
 #+BEGIN_SRC bash
-  zig build run --help | rg enable_gap_buffer
 
-  # -Denable_gap_buffer_debugging=[bool] Enable GapBuffer debugging or not
+  zig build --help | rg enable_debug_log
+
+  #  -Denable_debug_log=[bool]    Enable debug log or not.
 #+END_SRC
 
 
@@ -118,7 +131,7 @@ So, that build option will print out when you you run =zig build --help=:
 *** C. Run it with the given build options
 
 #+BEGIN_SRC bash
-  zig build -Denable_gap_buffer_debugging=true run
+  zig build -Denable_debug_log=true run
 #+END_SRC
 
 
@@ -135,7 +148,20 @@ Also, the ~debug_status~ field only exists when ~enable_debugging~ is defined, h
   // Extra build option
   //
   const build_options = b.addOptions();
-  build_options.addOption(bool, "enable_debugging", false);
+  build_options.addOption(
+      bool,                            // Option data type
+      "enable_debugging",              // Option name
+      //
+      // If you want this option to be available as a project-scoped
+      // option, then you have to use `Build.option()` to create
+      // the default option value!!!
+      //
+      b.option(                        
+          bool,                                  // Option data type
+          "enable_debugging_log",                // Option name
+          "Enable debug functionality or not ",  // Option description
+      ) orelse false,
+  );
 
   // 
   // `build_options` is the module name, then you can use it to import
