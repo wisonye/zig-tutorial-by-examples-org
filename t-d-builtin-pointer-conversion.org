@@ -69,6 +69,10 @@ Example:
 
 ** Something about =Alignment=
 
+Watch the following video to know more about how memory layout works:
+
+[[https://vimeo.com/649009599][Andrew Kelley - Practical DOD]]
+
 Each type has an alignment - a number of bytes such that, when a value of the type is loaded from or stored to memory, the memory address must be evenly divisible by this number.
 
 You can use ~@alignOf~ to find out this value for any type.

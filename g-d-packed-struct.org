@@ -1,0 +1,222 @@
+* Packed struct
+
+Unlike normal =structs=, =packed structs= have guaranteed in-memory layout:
+
+- Fields remain in the order declared, least to most significant.
+- There is no padding between fields.
+- Zig supports arbitrary width Integers and although normally, integers with fewer than 8 bits will still use 1 byte of memory, in packed structs, they use exactly their bit width.
+- =bool= fields use exactly =1= bit.
+- An enum field uses exactly the bit width of its integer tag type.
+- A packed union field uses exactly the bit width of the union field with the largest bit width.
+
+Let's take a look a real example:
+
+** 1. Normal version
+
+Bytes size is =6= and alignment is =1= (byte). It uses =6= bytes to store =6= boolean values.
+
+#+BEGIN_SRC zig
+  const SensorStatus = struct {
+      const Self = @This();
+
+      power: bool,
+      gps: bool,
+      lidar: bool,
+      temperature_sensor: bool,
+      oil_sensor: bool,
+      humidity_sensor: bool,
+
+      pub fn print_sensor_status(self: *const Self) void {
+          print("\n>>> [ SensorStatus ] - byte size: {}, alignment: {d} {{" ++
+              "\n\tPower: {}" ++
+              "\n\tGps:{}" ++
+              "\n\tLidar: {}" ++
+              "\n\tTemperatur_sensor: {}" ++
+              "\n\tOil_sensor: {}" ++
+              "\n\tHumidity_sensor: {}" ++
+              "\n}}", .{
+              // self.version,
+              @sizeOf(Self),
+              @alignOf(Self),
+              self.power,
+              self.gps,
+              self.lidar,
+              self.temperature_sensor,
+              self.oil_sensor,
+              self.humidity_sensor,
+          });
+      }
+  };
+
+  pub fn main() !void {
+      const ss = std.mem.zeroes(SensorStatus);
+      ss.print_sensor_status();
+  }
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ SensorStatus ] - byte size: 6, alignment: 1 {
+  #         Power: false
+  #         Gps:false
+  #         Lidar: false
+  #         Temperatur_sensor: false
+  #         Oil_sensor: false
+  #         Humidity_sensor: false
+  # }⏎
+#+END_SRC
+
+
+** Packed version
+
+Bytes size is =1(u6)= and alignment is =1= (byte). It uses =6= bytes to store =6= boolean values.
+
+#+BEGIN_SRC zig
+  const SensorStatusPacked = packed struct {
+      const Self = @This();
+
+      // `bool` consumes 1 bit in packed struct, same with `u1`
+      power: bool,
+      gps: bool,
+      lidar: bool,
+      temperature_sensor: bool,
+      oil_sensor: bool,
+      humidity_sensor: bool,
+
+      pub fn print_sensor_status(self: *const Self) void {
+          print("\n>>> [ SensorStatusPacked ] - byte size: {}, alignment: {d} {{" ++
+              "\n\tPower: {}" ++
+              "\n\tGps:{}" ++
+              "\n\tLidar: {}" ++
+              "\n\tTemperatur_sensor: {}" ++
+              "\n\tOil_sensor: {}" ++
+              "\n\tHumidity_sensor: {}" ++
+              "\n}}", .{
+              // self.version,
+              @sizeOf(Self),
+              @alignOf(Self),
+              self.power,
+              self.gps,
+              self.lidar,
+              self.temperature_sensor,
+              self.oil_sensor,
+              self.humidity_sensor,
+          });
+      }
+  };
+
+  pub fn main() !void {
+      const ss = std.mem.zeroes(SensorStatusPacked);
+      ss.print_sensor_status();
+  }
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ SensorStatusPacked ] - byte size: 1, alignment: 1 {
+  #         Power: false
+  #         Gps:false
+  #         Lidar: false
+  #         Temperatur_sensor: false
+  #         Oil_sensor: false
+  #         Humidity_sensor: false
+  # }⏎
+#+END_SRC
+
+
+** Packed advanced version
+
+For example, we need one more field to describe the antenna signal level which consumes 3 bits with the following meanings:
+
+#+BEGIN_SRC text
+  000 (0) - No signal
+  001 (1) - 1 star, Bad signal
+  010 (2) - 2 stars
+  011 (3) - 3 stars
+  100 (4) - 4 stars
+  101 (5) - 5 stars
+  110 (6) - 6 stars
+  111 (7) - 7 stars, Excellent signal
+#+END_SRC
+
+
+Bytes size is =1(u6)= and alignment is =1= (byte). It uses =6= bytes to store =6= boolean values.
+
+#+BEGIN_SRC zig
+   const SensorStatusPackedAdvanced = packed struct {
+      const Self = @This();
+
+      // `bool` consumes 1 bit in packed struct, same with `u1`, total 5 bits for all `bool` values
+      power: bool,
+      gps: bool,
+      lidar: bool,
+      temperature_sensor: bool,
+      oil_sensor: bool,
+
+      //
+      // 000 (0) - No signal
+      // 001 (1) - 1 star, Bad signal
+      // 010 (2) - 2 stars
+      // 011 (3) - 3 stars
+      // 100 (4) - 4 stars
+      // 101 (5) - 5 stars
+      // 110 (6) - 6 stars
+      // 111 (7) - 7 stars, Excellent signal
+      //
+      antenna_signal_level: u3,
+
+      pub fn print_sensor_status(self: *const Self) void {
+          const antenna_signal_level_desc = switch (self.antenna_signal_level) {
+              0 => "No signal",
+              1 => "1 star, Bad signal",
+              2 => "2 stars",
+              3 => "3 stars",
+              4 => "4 stars",
+              5 => "5 stars",
+              6 => "6 stars",
+              7 => "7 stars, Excellent signal",
+          };
+
+          print("\n>>> [ SensorStatusPackedAdvanced ] - byte size: {}, alignment: {d} {{" ++
+              "\n\tPower: {}" ++
+              "\n\tGps:{}" ++
+              "\n\tLidar: {}" ++
+              "\n\tTemperatur_sensor: {}" ++
+              "\n\tOil_sensor: {}" ++
+              "\n\tantenna_signal_level: {b:0>3} ({d}) - ({s})" ++
+              "\n}}", .{
+              // self.version,
+              @sizeOf(Self),
+              @alignOf(Self),
+              self.power,
+              self.gps,
+              self.lidar,
+              self.temperature_sensor,
+              self.oil_sensor,
+              self.antenna_signal_level,
+              self.antenna_signal_level,
+              antenna_signal_level_desc,
+          });
+      }
+  };
+
+  pub fn main() !void {
+      const ss = std.mem.zeroInit(SensorStatusPackedAdvanced, .{
+          .power = true,
+          .gps = true,
+          .oil_sensor = true,
+          .antenna_signal_level = 0b101,
+          // .antenna_signal_level = 5,
+      });
+      ss.print_sensor_status();
+  }
+#+END_SRC
+
+#+BEGIN_SRC bash
+  # >>> [ SensorStatusPackedAdvanced ] - byte size: 1, alignment: 1 {
+  #         Power: true
+  #         Gps:true
+  #         Lidar: false
+  #         Temperatur_sensor: false
+  #         Oil_sensor: true
+  #         antenna_signal_level: 101 (5) - (5 stars)
+  # }
+#+END_SRC
