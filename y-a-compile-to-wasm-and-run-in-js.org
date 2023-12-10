@@ -1,0 +1,149 @@
+* Compile to WASM and run in JavaScript
+
+** Init zig library project folder structure
+
+Run ~zig init-lib~ to create a Zig library project template and create a ~public~ folder with the following files:
+
+#+BEGIN_SRC bash
+    tree -L 3
+  # .
+  # ├── build.zig
+  # ├── public
+  # │   ├── index.html
+  # │   ├── main.wasm
+  # │   ├── run-zig-in-node.js
+  # │   └── run-zig.js
+  # └── src
+  #     └── main.zig
+#+END_SRC
+
+
+** Export some functions in ~src/main.zig~ with the following code
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+
+  export fn add(a: isize, b: isize) isize {
+      return a + b;
+  }
+
+  test "Test add" {
+      try std.testing.expect(add(1, 2) == 3);
+      try std.testing.expect(add(-3, 4) == 1);
+  }
+#+END_SRC
+
+You should run ~zig build test~ to make sure your ~add~ function works as expected.
+
+
+** Compile and produce the Zig dynamic library WASM file
+
+#+BEGIN_SRC zig
+  cd public
+
+  zig build-lib ../src/main.zig \
+      -target wasm32-freestanding \
+      -dynamic \
+      -rdynamic 
+#+END_SRC
+
+
+| Flag                | Description                                 |
+|---------------------+---------------------------------------------|
+| ~wasm32-freestanding~ | WASM 32 bit architect and freestanding OS   |
+| ~-dynamic~            | Force output to be dynamically linked       |
+| ~-rdynamic~           | Add all symbols to the dynamic symbol table |
+
+The command should create the following files:
+
+- ~main.wasm~
+- ~main.wasm.o~: You don't need this, you can delete it right away
+
+
+** Test your WASM in node
+
+Create ~public/run-zig-in-node.js~ with the following code:
+
+#+BEGIN_SRC javascript
+  const fs = require('fs')
+  const source = fs.readFileSync("./main.wasm")
+  const typedArray = new Uint8Array(source)
+
+  WebAssembly.instantiate(typedArray, {
+    env: {
+      print: (result) => { console.log(`The result is ${result}`); }
+    }}
+  ).then(result => {
+    const add = result.instance.exports.add
+          console.log(`add result: ${add(8, 8)}`)
+  })
+#+END_SRC
+
+Then run it
+
+#+BEGIN_SRC bash
+  cd public
+
+  node run-zig-in-node.js
+
+  # add result: 16
+#+END_SRC
+
+
+** Test your WASM in browser
+
+Create ~public/run-zig.js~ with the following code
+
+#+BEGIN_SRC javascript
+  const importObj = {}
+  WebAssembly.instantiateStreaming(
+          fetch("main.wasm"),
+          importObj,
+  ).then(zigLib => {
+          console.log(`Add result: ${zigLib.instance.exports.add(5, 5)}`)
+  })
+#+END_SRC
+
+
+The create ~public/index.html~ with the following code
+
+#+BEGIN_SRC html
+  <html> 
+     <body>
+      Run Zig WASM in JavaScript:)
+     </body>
+     <script src="run-zig.js"></script>
+   </html> 
+#+END_SRC
+
+
+Now, serve the ~public~ folder by any HTTP server:
+
+#+BEGIN_SRC bash
+  http-server ./
+  # Starting up http-server, serving ./
+
+  # http-server version: 14.1.1
+
+  # http-server settings:
+  # CORS: disabled
+  # Cache: 3600 seconds
+  # Connection Timeout: 120 seconds
+  # Directory Listings: visible
+  # AutoIndex: visible
+  # Serve GZIP Files: false
+  # Serve Brotli Files: false
+  # Default File Extension: none
+
+  # Available on:
+  #   http://127.0.0.1:8080
+  #   http://192.168.1.176:8080
+  # Hit CTRL-C to stop the server
+#+END_SRC
+
+Open =http://127.0.0.1:8080= in the browser and you should see the following deubg message in the console log:
+
+#+BEGIN_SRC text
+  Add result: 10
+#+END_SRC
+
