@@ -45,10 +45,10 @@ You can print those options by running:
 #+BEGIN_SRC zig
   const optimize = b.standardOptimizeOption(.{
       // For best performance
-      // .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseFast
+      // .preferred_optimize_mode = .ReleaseFast
 
       // For best binary size
-      .preferred_optimize_mode = std.builtin.OptimizeMode.ReleaseSmall
+      .preferred_optimize_mode = .OptimizeMode.ReleaseSmall
   });
 #+END_SRC
 

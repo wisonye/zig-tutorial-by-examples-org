@@ -48,7 +48,7 @@ The default action above is:
 
 + Add an executable with the project's name to the compilation process.
 + Compile the entry source file: ~src/main.zig~.
-+ Create a `install` step to produce the executable to =zig-out/bin=.
++ Create a =install= step to produce the executable to =zig-out/bin=.
 
 
 
@@ -72,7 +72,7 @@ So, when you run =zig build echo-args=, the default install step has to be run a
 
 ** Run an external CLI command
 
-You can use ~b.addSystemCommand~ to create a  runnable command step.
+You can use ~b.addSystemCommand~ to create a runnable command step.
 
 #+BEGIN_SRC zig
   //
@@ -105,10 +105,9 @@ You can use ~b.addSystemCommand~ to create a  runnable command step.
 So you run try the ~echo~ step like below, arguments follow by ~--~:
 
 #+BEGIN_SRC bash
-  zig build echo-args -- Hye hi hello ":)"
+  zig build echo-args -- update-to-cloud a.txt "A test file"
 
-  # Provied arguments:  { Hye, hi, hello, :) }
-
+  # Provied arguments:  { upload-to-cloud, a.txt, A test file }
 
   zig build echo-args
 

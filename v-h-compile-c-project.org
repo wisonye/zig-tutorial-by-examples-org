@@ -6,114 +6,112 @@ You can use =zig= to build any =C/C++= project, here are the steps:
 
 #+BEGIN_SRC bash
   # cd into your C project root folder and run
-  zig init-exe
+  zig init
 #+END_SRC
 
 
 ** 2. Edit =builg.zig= to compile to your C project
 
 #+BEGIN_SRC zig
-     //
-     // Create executable compilation process
-     //
-     const exe = b.addExecutable(.{
-         .name = "ping-pong-tron-legacy",
-         //
-         // Because this is NOT a zig project, there is NO `src/main.zig`, that's
-         // why you need to set to `null`!!!
-         //
-         .root_source_file = null,
-         .target = target,
-         .optimize = optimize,
-     });
+  //
+  // Create executable compilation process
+  //
+  const my_exe = b.addExecutable(.{
+      .name = "my-c-project",
+      //
+      // Because this is NOT a zig project, there is NO `src/main.zig`, that's
+      // why you need to set to `null`!!!
+      //
+      .root_source_file = null,
+      .target = target,
+      .optimize = optimize,
+  });
 
-     //
-     // Your `CFlags` for compiling echo C file
-     //
-     const cflags = [_][]const u8{
-         "-Wall",
-         "-Wextra",
-         "-std=c99",
-         "-g",
-     };
+  //
+  // Your `CFlags` for compiling echo C file
+  //
+  const cflags = [_][]const u8{
+      "-Wall",
+      "-Wextra",
+      "-std=c99",
+      "-g",
+  };
 
-     //
-     // Add C source files with the given `CFlags`, you can apply different
-     // cFlag to different files by this way
-     //
-     exe.addCSourceFile(.{
-         .file = .{ .path = "src/a.c" },
-         .flags = &cflags,
-     });
-     exe.addCSourceFile(.{
-         .file = .{ .path = "src/b.c" },
-         .flags = &cflags,
-     });
-     exe.addCSourceFile(.{
-         .file = .{ .path = "src/c.c" },
-         .flags = &cflags,
-     });
-     exe.addCSourceFile(.{
-         .file = .{ .path = "src/main.c" },
-         .flags = &cflags,
-     });
+  //
+  // Add C source files with the given `CFlags`, you can apply different
+  // cFlag to different files by this way
+  //
+  my_exe.addCSourceFile(.{
+      .file = .{ .path = "src/a.c" },
+      .flags = &cflags,
+  });
+  my_exe.addCSourceFile(.{
+      .file = .{ .path = "src/b.c" },
+      .flags = &cflags,
+  });
+  my_exe.addCSourceFile(.{
+      .file = .{ .path = "src/main.c" },
+      .flags = &cflags,
+  });
 
-     //
-     // Or you can add them all like this if you use the same cflags
-     //
-     exe.addCSourceFiles(&[_][]const u8{
-         "src/a.c",
-         "src/b.c",
-         "src/c.c",
-         "src/main.c",
-     }, &cflags);
+  //
+  // Or you can add them all like this if you use the same cflags
+  //
+  // my_exe.addCSourceFiles(.{
+  //     .files = &[_][]const u8{
+  //         "src/a.c",
+  //         "src/b.c",
+  //         "src/main.c",
+  //     },
+  //     .flags = &cflags,
+  // });
 
 
-     //
-     // Conditional compilation based on OS
-     //
-     // if (exe.target.isWindows()) {
-     //     exe.addCSourceFile(.{
-     //         .file = .{ .path = "src/print-windows.c" },
-     //         .flags = &cflags,
-     //     });
-     // } else {
-     //     exe.addCSourceFile(.{
-     //         .file = .{ .path = "src/print-unix.c" },
-     //         .flags = &cflags,
-     //     });
-     // }
+  //
+  // Conditional compilation based on OS
+  //
+  // if (exe.target.isWindows()) {
+  //     exe.addCSourceFile(.{
+  //         .file = .{ .path = "src/print-windows.c" },
+  //         .flags = &cflags,
+  //     });
+  // } else {
+  //     exe.addCSourceFile(.{
+  //         .file = .{ .path = "src/print-unix.c" },
+  //         .flags = &cflags,
+  //     });
+  // }
 
-     //
-     // Define own macros like we pass them with the `-D` compiler flag.
-     //
-     // The first argument is the macro name, the second value is an optional that,
-     // if not `null`, will set the value of the macro.
-     //
-     exe.defineCMacro("ENABLE_DEBUG_LOG", null);
+  //
+  // Define own macros like we pass them with the `-D` compiler flag.
+  //
+  // The first argument is the macro name, the second value is an optional that,
+  // if not `null`, will set the value of the macro.
+  //
+  my_exe.defineCMacro("ENABLE_DEBUG_LOG", null);
 
-     //
-     // Add include path and library path when necessary.
-     // Or you can add `-I` or `-L` to the global `cFlags` above, it's up to you:)
-     //
-     // exe.addIncludeDir("/usr/local/include");
-     // exe.addLibPath("/usr/local/lib");
+  //
+  // Add include path and library path when necessary.
+  // Or you can add `-I` or `-L` to the global `cFlags` above, it's up to you:)
+  //
+  // exe.addIncludeDir("/usr/local/include");
+  // exe.addLibPath("/usr/local/lib");
 
-     //
-     // Link to `libc` and any system libraries you needed
-     //
-     exe.linkLibC();
-     exe.linkSystemLibrary("raylib");
+  //
+  // Link to `libc` and any system libraries you needed
+  //
+  my_exe.linkLibC();
+  my_exe.linkSystemLibrary("raylib");
 
-     //
-     // Link the c++ standard library shipped with Zig if you're compiling C++.
-     //
-     // exe.linkLibCpp();
+  //
+  // Link the c++ standard library shipped with Zig if you're compiling C++.
+  //
+  // my_exe.linkLibCpp();
 
-     //
-     // Make sure create default `install` step
-     //
-     b.installArtifact(exe);
+  //
+  // Make sure create default `install` step
+  //
+  b.installArtifact(my_exe);
 #+END_SRC
 
 
@@ -129,7 +127,18 @@ You can use =zig= to build any =C/C++= project, here are the steps:
 For bigger project, it doesn't make any sense that you call ~exe.addCSourceFile~ manually to cover hundreds C source files, here is an example to add all C source files in the given folder:
 
 #+BEGIN_SRC zig
-  var sources = std.ArrayList([]const u8).init(b.allocator);
+  const my_exe = b.addExecutable(.{
+      .name = "my-c-project",
+      //
+      // Because this is NOT a zig project, there is NO `src/main.zig`, that's
+      // why you need to set to `null`!!!
+      //
+      .root_source_file = null,
+      .target = target,
+      .optimize = optimize,
+  });
+
+  var source_files = std.ArrayList([]const u8).init(b.allocator);
 
   // Search for all C/C++ files in `src` and add them
   {
@@ -146,12 +155,35 @@ For bigger project, it doesn't make any sense that you call ~exe.addCSourceFile~
                   break true;
           } else false;
           if (include_file) {
+              //
               // we have to clone the path as walker.next() or walker.deinit() will override/kill it
-              try sources.append(b.dupe(entry.path));
+              //
+              const cloned_filename = b.dupe(entry.path);
+              try source_files.append(try std.fmt.allocPrint(
+                  b.allocator,
+                  "{s}{s}",
+                  .{
+                      "src/",
+                      cloned_filename,
+                  },
+              ));
           }
       }
   }
 
-  const exe = b.addExecutable("example", null);
-  exe.addCSourceFiles(sources.items, &[_][]const u8{});
+  for (source_files.items) |filename| {
+      std.debug.print("\n>>> C soruce file: {s}", .{filename});
+  }
+
+  my_exe.addCSourceFiles(.{
+      .files = source_files.items,
+      .flags = &cflags,
+  });
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+  # >>> C soruce file: src/a.c
+  # >>> C soruce file: src/main.c
+  # >>> C soruce file: src/b.c⏎
 #+END_SRC

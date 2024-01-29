@@ -39,7 +39,6 @@ As you're trying to build the particular triple target, that's why you don't nee
 #+BEGIN_SRC zig
   const std = @import("std");
   const print = std.debug.print;
-  const CrossTarget = std.zig.CrossTarget;
 
   const SERVICE_NAME = "zig-demo-service";
   const LOGGER_NAME = "gcr-musl-release-build";
@@ -48,9 +47,9 @@ As you're trying to build the particular triple target, that's why you don't nee
   ///
   ///
   pub fn create_musl_release_build(b: *std.Build) void {
-      const musl_target: CrossTarget = CrossTarget.parse(.{
+      const musl_target = b.resolveTargetQuery(std.Target.Query.parse(.{
           .arch_os_abi = "x86_64-linux-musl",
-      }) catch unreachable;
+      }) catch unreachable);
 
       // const text = musl_target.zigTriple(b.allocator) catch "";
           // defer b.allocator.free(text);
@@ -61,23 +60,23 @@ As you're trying to build the particular triple target, that's why you don't nee
           .root_source_file = .{ .path = "src/main.zig" },
 
           //
-              // Cross-compilation
+          // Cross-compilation
           //
           .target = musl_target,
 
           //
-              // Enable release build (best performance)
+          // Enable release build (best performance)
           //
-          // .optimize = std.builtin.OptimizeMode.ReleaseFast,
+          // .optimize = .ReleaseFast,
 
           //
-              // Enable release build (best binary size)
+          // Enable release build (best binary size)
           //
-          .optimize = std.builtin.OptimizeMode.ReleaseSmall,
+          .optimize = .ReleaseSmall,
       });
 
       //
-          // Create a `install` step to produce the executable to `zig-out/bin`.
+      // Create a `install` step to produce the executable to `zig-out/bin`.
       //
       b.installArtifact(musl_bin);
   }

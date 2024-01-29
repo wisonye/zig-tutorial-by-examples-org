@@ -63,9 +63,9 @@ Or you can mix =CPU Arch= and =OS type= together like this:
 
 Also, you can use =build option= to achieve conditional compilation purposes.
 
-For example, you want to compile some code block based on whethere ~enable_gap_buffer_debugging~ is defined, so you can do like this:
+For example, you want to compile some code block based on whethere ~enable_debug_log~ is defined, so you can do like this:
 
-*** A. Add ~enable_gap_buffer_debugging~ build option in ~build.zig~
+*** A. Add ~enable_debug_log~ build option in ~build.zig~
 
 #+BEGIN_SRC zig
   //
@@ -93,14 +93,13 @@ For example, you want to compile some code block based on whethere ~enable_gap_b
   //
   // You can name it whatever you want, just make sure they're a match!!!
   // 
-  exe.addOptions("build_options", build_options);
+  exe.root_module.addOptions("build_options", build_options);
 #+END_SRC
 
 
 So, that build option will print out when you you run =zig build --help=:
 
 #+BEGIN_SRC bash
-
   zig build --help | rg enable_debug_log
 
   #  -Denable_debug_log=[bool]    Enable debug log or not.
@@ -118,10 +117,10 @@ So, that build option will print out when you you run =zig build --help=:
   const build_options = @import("build_options");
 
   // This is compile time constant value, nobody can change that!!!
-  const enable_gap_buffer_debugging = build_options.enable_gap_buffer_debugging;
+  const enable_debug_log = build_options.enable_debug_log;
 
   // Conditional compilation
-  if (enable_gap_buffer_debugging) {
+  if (enable_debug_log) {
       // Your debug code here
   }
 #+END_SRC
@@ -158,7 +157,7 @@ Also, the ~debug_status~ field only exists when ~enable_debugging~ is defined, h
       //
       b.option(                        
           bool,                                  // Option data type
-          "enable_debugging_log",                // Option name
+          "enable_debugging",                    // Option name
           "Enable debug functionality or not ",  // Option description
       ) orelse false,
   );
@@ -174,7 +173,7 @@ Also, the ~debug_status~ field only exists when ~enable_debugging~ is defined, h
 
 
 
-*** 2) This is how to define struct field based on the ~enable_debugging~ build options
+*** 2) Then, define struct field based on the ~enable_debugging~ build options
 
 #+BEGIN_SRC zig
   const DebugStatus = @import("debug_status.zig").DebugStatus;
