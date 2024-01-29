@@ -15,8 +15,7 @@ If you want another package (consumer package) that is able to use  your current
   // Create public module
   //
   const my_module = b.addModule("my_module_name_here", .{
-      .source_file = .{ .path = "src/my_module_filename.zig" },
-      .dependencies = &.{},
+      .root_source_file = .{ .path = "src/my_module_filename.zig" },
   });
 #+END_SRC
 
@@ -32,15 +31,14 @@ In some cases, you want a private module which only visible inside your own pack
   // Create private module
   //
   const logger_module = b.createModule(.{
-      .source_file = .{ .path = "./src/logger_utils.zig" },
-      .dependencies = &.{},
+      .root_source_file = .{ .path = "./src/logger_utils.zig" },
   });
 #+END_SRC
 
 
 ** 2. How to export all structs/functions in a single module
 
-As you can see that ~b.addModule~ only accept a single zig file, which means you have to export multiple modules if you want to export multiple structs/functions in separate files
+As you can see that ~b.addModule~ only accept a single zig file, which means you have to export multiple modules if you want to export multiple structs/functions in separate files.
 
 For example, you have the following folder structure:
 
@@ -60,13 +58,11 @@ If you want to export ~Bits~ from ~bits.zig~ and ~Random~ from  ~random_numbers.
 
 #+BEGIN_SRC zig
   const random_module = b.addModule("Random", .{
-      .source_file = .{ .path = "src/random_numbers.zig" },
-      .dependencies = &.{},
+      .root_source_file = .{ .path = "src/random_numbers.zig" },
   });
 
   const bits_module = b.addModule("Bits", .{
-      .source_file = .{ .path = "src/bits.zig" },
-      .dependencies = &.{},
+      .root_source_file = .{ .path = "src/bits.zig" },
   });
 #+END_SRC
 
@@ -89,8 +85,7 @@ Then only one module exports in ~build.zig~:
 
 #+BEGIN_SRC zig
   const z_utils_module = b.addModule("z_utils", .{
-      .source_file = .{ .path = "src/z_utils.zig" },
-      .dependencies = &.{},
+      .root_source_file = .{ .path = "src/z_utils.zig" },
   });
 #+END_SRC
 
@@ -194,7 +189,7 @@ In the build script, dependencies can be referenced using the ~std.Build.depende
   });
 
   const z_utils_module = z_utils_dep.module("z_utils");
-  exe.addModule("z_utils", z_utils_module);
+  exe.root_module.addImport("z_utils", z_utils_module);
 #+END_SRC
 
 
@@ -250,7 +245,7 @@ Use ~std.Build.anonymousDependency~ instead of ~std.Build.dependency~ to import 
   );
 
   const z_utils_module = z_utils_dep.module("z_utils");
-  exe.addModule("z_utils", z_utils_module);
+  exe.root_module.addImport("z_utils", z_utils_module);
 #+END_SRC
 
 - ~z_utils_dep.module("z_utils");~: that ~"z_utils"~ is the module name which comes from the dependency package's ~build.zig~:
