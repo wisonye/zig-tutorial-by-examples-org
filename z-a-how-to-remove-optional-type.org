@@ -1,0 +1,55 @@
+* How to remove optional type
+
+** How to remove optional type
+
+You can use ~std.meta.Child~ to remove optional type and get back its child type like this:
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() !void {
+      // Type is `?u8`
+      const optional_var: ?u8 = 88;
+      const OptionalVarType = @TypeOf(optional_var);
+
+      // Type is `u8` (removed optional type and get back child type)
+      const VarType = std.meta.Child(OptionalVarType);
+      const var_removed_optional: VarType = 99;
+
+      print("\n>>> optional_var type: {}", .{@TypeOf(optional_var)});
+      print("\n>>> var_removed_optional type: {}", .{@TypeOf(var_removed_optional)});
+  }
+#+END_SRC
+
+
+** How to remove optional type when dealing with function call
+
+#+BEGIN_SRC zig
+  const std = @import("std");
+  const print = std.debug.print;
+
+  pub fn main() !void {
+      // Type is `?u8`
+      const optional_var: ?u8 = 88;
+
+      //
+      // This triggers compile error!!!
+      //
+      // no_optional_plz(@TypeOf(optional_var));
+
+      //
+      // This is fine
+      //
+      no_optional_plz(std.meta.Child(@TypeOf(optional_var)));
+  }
+
+  fn no_optional_plz(comptime t: type) void {
+      const type_info: std.builtin.Type = @typeInfo(t);
+
+      switch (type_info) {
+          .Optional => @compileError("'no_optional_plz' function doesn't accept optional type."),
+          else => {},
+      }
+  }
+#+END_SRC

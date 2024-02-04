@@ -92,3 +92,5 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 **** 24.9. [[file:x-i-how-to-send-http-request.org][Send HTTP request]]
 *** 25. Web Assembly
 25.1. [[file:y-a-compile-to-wasm-and-run-in-js.org][Compile to WASM and run in JavaScript]]
+*** 26. Type handling
+26.1. [[file:y-a-compile-to-wasm-and-run-in-js.org][How to remove optional type(~?X~ --> ~X~)]]
