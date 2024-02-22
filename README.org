@@ -93,4 +93,4 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 *** 25. Web Assembly
 25.1. [[file:y-a-compile-to-wasm-and-run-in-js.org][Compile to WASM and run in JavaScript]]
 *** 26. Type handling
-26.1. [[file:y-a-compile-to-wasm-and-run-in-js.org][How to remove optional type(~?X~ --> ~X~)]]
+26.1. [[file:z-a-how-to-remove-optional-type.org][How to remove optional type(~?X~ --> ~X~)]]
