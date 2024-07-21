@@ -12,7 +12,6 @@ Stand ~std.mem.Allocator~ works like an interface, it has the following function
   //
   // Alloc multiple item spaces and free once
   //
-
   fn alloc(self: Allocator, comptime T: type, n: usize) Error![]T
   fn realloc(self: Allocator, old_mem: anytype, new_n: usize)
   fn free(self: Allocator, memory: anytype) void

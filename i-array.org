@@ -237,7 +237,7 @@ There are 2 major usages for =Array multiplcation=:
               }
           }
           // Then multiple the value N times
-          ,** MAX_PARTICAL_AMOUNT
+          ** MAX_PARTICAL_AMOUNT
       };
       print("\n>>> ps: {any}", ps);
   }
@@ -261,7 +261,7 @@ And this is the more readable version by adding the type there:
               }
           }
           // Then multiple the array N times
-          ,** MAX_PARTICAL_AMOUNT
+          ** MAX_PARTICAL_AMOUNT
       };
       print("\n>>> ps: {any}", ps);
   }
@@ -310,7 +310,7 @@ print("\n", .{});
 
 ** Passing array as parameter and return an array
 
-When you pass an array as a function parameter, you better to pass is as =Slice= which means the =pointer to the array=.
+When you pass an array as a function parameter, you better to pass it as =Slice= which means the =pointer to the array=.
 
 When you return an array, the array has to be length specified (size known at compile-time).
 

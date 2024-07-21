@@ -8,30 +8,30 @@
       const temp_type = @TypeOf(value);
       const byte_size = @sizeOf(temp_type);
       const align_size = @alignOf(temp_type);
-      const ptr = @ptrCast([*]const u8, &value);
-
-      print("\n>>> [ print_mem ] - value type: {}, align_size: {}, byte size: {} ptr type: {}", .{
+      const ptr: [*]const u8 = @ptrCast(&value);
+  
+      print("\n>>> [ print_mem ]: {{\n\tvalue type: {},\n\tnatural_alignment size (in bytes): {},\n\tbyte size: {}\n\tpointer type: {}", .{
           temp_type,
           align_size,
           byte_size,
           @TypeOf(ptr),
       });
-
+  
       const buf_len = byte_size * 2 + byte_size / align_size;
       var buf = [1:0]u8{0x00} ** buf_len;
       // print("\n>>> [ print_mem ] - buf_len: {}", .{buf_len});
-
+  
       var i: usize = 0;
       while (i < byte_size) {
           _ = std.fmt.bufPrint(buf[i * 2 ..], "{X:0>2}", .{ptr[i]}) catch "";
           i += 1;
-
+  
           if (i == align_size * 2 - 1) {
               // ...
               // i += 1;
           }
       }
-      print("\n>>> [ print_mem ] - buf: 0x{s}\n", .{buf});
+      print("\n\tbuf: 0x{s}\n}}\n", .{buf});
   }
 
   ///

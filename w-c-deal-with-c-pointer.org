@@ -27,7 +27,7 @@ Let's take the following extern function as an example:
 
 When dealing with the ~[*c]T~ (C pointer), you have a few choices to make your code work. 
 
-** 1. Stick with Zig pointer type (high recommended)
+** 1. Stick with Zig pointer type (highly recommended)
 
 You can open the translated zig source code and modify the ~[*c]T~ to become:
 

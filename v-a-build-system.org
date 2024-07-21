@@ -20,7 +20,7 @@ It creates the following folder structure:
   .
   ├── build.zig       # Build script configuration
   ├── build.zig.zon   # Package dependencies configuration
-  ├── zig-cache       # Build cache
+  ├── .zig-cache       # Build cache
   ├── zig-out         # Default output folder
   └── src             # Your zig source code
        ├── main.zig   # Sample executable source file
