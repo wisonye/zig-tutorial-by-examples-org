@@ -1,0 +1,101 @@
+* Compile with C object files
+
+** Compile C into static library and link to it
+
+For example, compile ~/src/c/miniaudio.c~ as a static library, then link it to main binary.
+
+#+BEGIN_SRC zig
+  //
+  // Compile `src/c/miniaudio.h (c)` as static library
+  //
+  const miniaudio_obj = b.addStaticLibrary(.{
+      .name = "miniaudio",
+      .root_source_file = null,
+      .target = target,
+      .optimize = optimize,
+  });
+
+  const common_cflags = [_][]const u8{
+      "-Wall",
+      "-Wextra",
+      "-O3",
+  };
+
+  const c_source_files = [_][]const u8{"src/c/miniaudio.c"};
+
+  //
+  // Include the implementation inside header file
+  //
+  miniaudio_obj.defineCMacro("MINIAUDIO_IMPLEMENTATION", null);
+
+  if (builtin.os.tag == .macos) {
+      miniaudio_obj.addCSourceFiles(.{
+          .files = &c_source_files,
+          .flags = &common_cflags,
+      });
+  } else if (builtin.os.tag == .linux) {
+      const linux_cflags = common_cflags ++ [_][]const u8{
+          "-ldl",
+          "-lpthread",
+          "-lm",
+      };
+      miniaudio_obj.addCSourceFiles(.{
+          .files = &c_source_files,
+          .flags = &linux_cflags,
+      });
+      miniaudio_obj.addIncludePath(.{
+          .cwd_relative = "/usr/include",
+      });
+      miniaudio_obj.linkLibC();
+  } else {}
+
+  //
+  // Debug print
+  //
+  print(
+      "\n>>> miniaudio_obj.root_module.link_objects.items len: {}, values: {{",
+      .{miniaudio_obj.root_module.link_objects.items.len},
+  );
+  for (miniaudio_obj.root_module.link_objects.items) |link_obj| {
+      print("\n>>> \tC source files: {s}", .{link_obj.c_source_files.files});
+      print("\n>>> \tC flags: {s}", .{link_obj.c_source_files.flags});
+  }
+  print("\n>>> \tC include dirs len: {}, values: {{ ", .{
+      miniaudio_obj.root_module.include_dirs.items.len,
+  });
+  for (miniaudio_obj.root_module.include_dirs.items) |include_dir| {
+      switch (include_dir) {
+          std.Build.Module.IncludeDir.path, std.Build.Module.IncludeDir.path_system, std.Build.Module.IncludeDir.path_after, std.Build.Module.IncludeDir.framework_path, std.Build.Module.IncludeDir.framework_path_system => |path| {
+              print("{s}, ", .{path.getDisplayName()});
+          },
+          else => print("'other_step' or 'config_header_step", .{}),
+      }
+  }
+  print("}}\n>>> }}\n", .{});
+
+
+  //
+  // `audio_capture` binary and link to `miniaudio_obj` (lib)
+  //
+  const exe = b.addExecutable(.{
+      .name = "audio_capture",
+      .root_source_file = b.path("src/main.zig"),
+      .target = target,
+      .optimize = optimize,
+  });
+
+  exe.linkLibrary(miniaudio_obj);
+
+  b.installArtifact(exe);
+#+END_SRC
+
+
+Example Output:
+
+#+BEGIN_SRC bash
+  >>> miniaudio_obj.root_module.link_objects.items len: 1, values: {
+  >>>     C source files: { src/c/miniaudio.c }
+  >>>     C flags: { -Wall, -Wextra, -O3 }
+  >>>     C include dirs len: 0, values: { }
+  >>> }
+#+END_SRC

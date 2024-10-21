@@ -1,0 +1,30 @@
+* Print target triple info
+
+#+BEGIN_SRC zig
+  //
+  // Print target info
+  //
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+  const gpa_allocator = gpa.allocator();
+  defer {
+      const deinit_status = gpa.deinit();
+      //fail test; can't try in defer as defer is executed after we return
+      if (deinit_status == .leak) std.testing.expect(false) catch @panic("\nGPA detected a memory leak!!!\n");
+  }
+
+  var sfa = std.heap.stackFallback(64, gpa_allocator);
+  const allocator = sfa.get();
+
+  std.debug.print("\n>>> Target: {s}\n>>> Target triple: {!s}\n\n", .{
+      target.result.osArchName(),
+      target.result.zigTriple(allocator),
+  });
+#+END_SRC
+
+
+Example output:
+
+#+BEGIN_SRC bash
+  >>> Target: x86_64
+  >>> Target triple: x86_64-macos.14.4.1...14.4.1-none
+#+END_SRC
