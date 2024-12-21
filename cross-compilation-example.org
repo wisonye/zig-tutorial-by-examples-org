@@ -1,0 +1,54 @@
+* Cross-compilation example
+
+#+BEGIN_SRC zig
+  //
+  // Cross-compilation to Alpine Linux
+  //
+  const musl_target = b.resolveTargetQuery(std.Target.Query.parse(.{
+      .arch_os_abi = "x86_64-linux-musl",
+  }) catch unreachable);
+
+  //
+  // Cross-compilation to Alpine Linux on Raspberry Pi 4
+  //
+  const musl_aarch64_target = b.resolveTargetQuery(std.Target.Query.parse(.{
+          .arch_os_abi = "aarch64-linux-musl",
+  }) catch unreachable);
+
+  //
+  // Then, you can print the target triple string
+  //
+  const musl_target_triple_str = musl_target.result.zigTriple(b.allocator) catch "";
+  defer b.allocator.free(musl_target_triple_str);
+  print("\n>>> [ Build ] - musl_target_triple_str: {s}", .{musl_target_triple_str});
+
+  const musl_aarch64_target_triple_str = musl_aarch64_target.result.zigTriple(b.allocator) catch "";
+  defer b.allocator.free(musl_aarch64_target_triple_str);
+  print("\n>>> [ Build ] - musl_aarch64_target_triple_str: {s}", .{musl_aarch64_target_triple_str});
+
+
+  //
+  // Cross-compilation to Alpine Linux on Raspberry Pi 4
+  //
+  const arm_exe = b.addExecutable(.{
+      .name = "z-utils-aarch64",
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "src/main.zig",
+          },
+      },
+      .target = musl_aarch64_target,
+      .optimize = optimize,
+  });
+  b.installArtifact(arm_exe);
+#+END_SRC
+
+
+#+BEGIN_SRC bash
+  >>> [ Build ] - musl_target_triple_str: x86_64-linux.4.19...6.5.7-musl
+  >>> [ Build ] - musl_aarch64_target_triple_str: aarch64-linux.4.19...6.5.7-musl
+#+END_SRC
+
+
+

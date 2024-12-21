@@ -68,6 +68,7 @@ I'm working on some machine learning project with =Zig= at this moment,  I will 
 **** 22.2. [[file:v-c-a-print-target-triple-info.org][Print target triple info]]
 **** 22.2. [[file:v-c-conditional-compilation.org][Conditional compilation]]
 **** 22.3. [[file:v-d-build-multiple-targets.org][Build multiple targets]]
+**** 22.3.1[[file:cross-compilation-example.org][Cross-compilation example]]
 **** 22.4. [[file:v-e-custom-build-step.org][Customize build step]]
 **** 22.5. [[file:v-f-a-pitfall-when-using-dependon.org][A pitfall when using dependOn]]
 **** 22.6. [[file:v-g-how-to-add-exisiting-library.org][Add existing library]]
