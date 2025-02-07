@@ -1,0 +1,31 @@
+*** Block expression return value
+
+#+BEGIN_SRC zig
+  const LOG_PREFIX = "[ test_block_expression_return_by_label ]";
+
+  pub fn test_block_expression_return_by_label() void {
+      //
+      // In zig, blocks are expressions that can return a value by using a given
+      // label with `break` keyword.
+      //
+      // Why `break`? that's because `return` keyword used to return value from a
+      // `function`, that's why you have to use something else:)
+      //
+      // `back_to_here` here is a label name, can be anything you want:)
+      //
+      const value_return_from_block = back_to_here: {
+          const x = 10;
+          const y = 20;
+          // You can have a very compilcated `temp_value` logic here:)
+          break :back_to_here x * y;
+      };
+
+      print(
+          "\n{s} value_return_from_block value: {}",
+          .{ LOG_PREFIX, value_return_from_block },
+      );
+  }
+
+  const std = @import("std");
+  const print = std.debug.print;
+#+END_SRC
