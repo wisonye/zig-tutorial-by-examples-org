@@ -1,15 +1,15 @@
 * What is Zig
 
-In the nutshell, =zig= is a better =C=, I feel that it's the replacement of =C= or the =Better C without bullshit=. Because of the following features:
+In the nutshell, =zig= tries to be a better =C=, someone says it's the replacement of =C= or the =Better C without bullshit=. Because of the following features:
 
 ** =Zig= removes all =C= bad designs and improves it.
 
-Watch [[https://www.youtube.com/watch?v=Gv2I7qTux7g&t=67s][this]]
+Watch this: [[https://www.youtube.com/watch?v=Gv2I7qTux7g&t=67s][The Road to Zig 1.0 - Andrew Kelley]]
 
 
-** =Zig= compiler is an embedded =C/C++= compiler as well.
+** =Zig= compiler is also an embedded =C/C++= compiler as well.
 
-A single executable file, and portable, you don't have to install any of =gcc/clang/make/gmake/cmake anymore, as ~zig cc~ is the all-in-one program that you need to download (smaller and faster).
+A single executable file, and portable, you don't have to install any of =gcc/clang/make/gmake/cmake anymore=, as ~zig cc~ is the all-in-one program that you need to download (smaller and faster).
 
 
 ** =Zig= compiler can cross-compile =C/C++= to any supported target (=zig targets=).
@@ -29,8 +29,6 @@ If you go into the downloaded and unzipped =zig= folder, you should able to see 
   # ├── musl
   # └── wasi
 #+END_SRC
-
-Each one of them have all the headers and source files.
 
 
 Also, it includes =libc++= headers and sources as well:

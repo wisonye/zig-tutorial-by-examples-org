@@ -10,21 +10,17 @@
 ** =Undefined= and init
 
 #+BEGIN_SRC zig
-  //
-  // Undefined var (and NOT init later) has to be `const`, otherwise you will get the following compile error:
-  //
-  // `error: variable of type '@TypeOf(undefined)' must be const or comptime`
-  //
-  // var undefined_var = undefined;
-  // 
   var init_later: usize = undefined;
   init_later = 888;
 #+END_SRC
 
 
-** If you don't care about the function return value, assign it to =_=
+** Unused variable or function return value, assign it to =_= to avoid compiler error
 
 #+BEGIN_SRC zig
+  const value_not_use = 100;
+  _ = value_not_use;
+
   _ = function();
 #+END_SRC
 

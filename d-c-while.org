@@ -3,9 +3,6 @@
 ** Use ~while~ loop with optional
 
 #+BEGIN_SRC zig
-  const std = @import("std");
-  const print = std.debug.print;
-
   fn return_optional_result(guess_number: u8) ?bool {
       return if (guess_number == 8) true else false;
   }
@@ -26,6 +23,9 @@
           }
       }
   }
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 

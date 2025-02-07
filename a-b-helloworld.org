@@ -1,4 +1,6 @@
-* Simple hello world
+* Hello world cross-compilation
+
+** Simple hello world
 
 Here is the simple hello world of =Zig= (copy and save it to =./temp.zig=)
 
@@ -11,7 +13,7 @@ Here is the simple hello world of =Zig= (copy and save it to =./temp.zig=)
 #+END_SRC
 
 
-* Build and run in `zig`
+** Build and run in =zig=
 
 #+BEGIN_SRC bash
   zig build-exe temp.zig && ./temp
@@ -19,10 +21,9 @@ Here is the simple hello world of =Zig= (copy and save it to =./temp.zig=)
 
 
 
-* Cross-compilation
+** Cross-compilation
 
-=-O ReleaseSmall= means *RELEASE* build and *SMALL* binary size (stripped)
-optimization :
+=-O ReleaseSmall= means *RELEASE* build and *SMALL* binary size (stripped) optimization :
 
 #+BEGIN_SRC bash
   # Linux MUSL (Intel and ARM64)

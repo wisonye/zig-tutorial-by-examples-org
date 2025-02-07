@@ -2,84 +2,76 @@
 
 ** ~enum~
 
-By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the integer value:
+By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the integer value and use ~@tagName~ to get back the string.
 
 #+BEGIN_SRC zig
-  const std = @import("std");
-  const print = std.debug.print;
+  const LOG_PREFIX = "[ test_enum ]";
 
-  pub fn main() void {
-      const Result = enum {
-          Success,
-          Failure,
-      };
-
-      // Declare a specific enum field.
-      const temp_result = Result.Success;
-
-      print("\n>>> [ enum ] - temp_result type: {}, value: {}", .{
-          @TypeOf(temp_result),
-          temp_result,
-      });
-
+  fn print_enum(var_name: []const u8, e: anytype) void {
       print(
-          "\n>>> [ enum ] - '@intFromEnum(Result.Success) == 0': {} ",
-          .{@intFromEnum(Result.Success) == 0},
-      );
-      print(
-          "\n>>> [ enum ] - '@intFromEnum(Result.Failure) == 1': {} ",
-          .{@intFromEnum(Result.Failure) == 1},
+          "\n{s} {s}, type: {}, size: {}, tagName: {s}, value: {}, value in integer: {}",
+          .{
+              LOG_PREFIX,
+              var_name,
+              @TypeOf(e),
+              @sizeOf(@TypeOf(e)),
+              @tagName(e),
+              e,
+              @intFromEnum(e),
+          },
       );
   }
-#+END_SRC
 
+  //
+  // You can specify the enum base type, otherwise, use `u8` by default:
+  //
+  // const Status = enum(u16) {
+  //
+  const Status = enum {
+      //
+      // You can specify the enum tag value, otherwise, starts from `0`!!!
+      // In this way, you must provide the enum base type, e.g. `enum(u16)`!!!
+      //
+      // Pending = 0x0A,
+      //
+      Pending,
+      Processing,
+      Done,
+  };
 
-#+BEGIN_SRC bash
-# >>> [ enum ] - temp_result type: enum.run.Result, value: enum.run.Result.Success
-# >>> [ enum ] - '@intFromEnum(Result.Success) == 0': true
-# >>> [ enum ] - '@intFromEnum(Result.Failure) == 1': true 
-#+END_SRC
+  pub fn test_enum() void {
+      //
+      // You can use `.` enum value to let compiler to guess the enum value
+      // instead using the exact enum type like this:
+      //
+      // var current_state = Status.Pending;
+      //
+      var current_state: Status = .Pending;
+      print_enum("current_state", current_state);
 
+      current_state = .Processing;
+      print_enum("current_state", current_state);
 
-** ~enum~ with type
+      current_state = .Done;
+      print_enum("current_state", current_state);
+  }
 
-#+BEGIN_SRC zig
   const std = @import("std");
   const print = std.debug.print;
-
-  pub fn main() void {
-    const ResultU8 = enum(u8) {
-        Success = 0x01,
-        Failure = 0x04,
-    };
-
-    print(
-        "\n>>> [ enum ] - '@intFromEnum(ResultU8.Success) == 0x01': {} ",
-        .{@intFromEnum(ResultU8.Success) == 0x01},
-    );
-    print(
-        "\n>>> [ enum ] - '@intFromEnum(ResultU8.Failure) == 0x04': {} ",
-        .{@intFromEnum(ResultU8.Failure) == 0x04},
-    );
-  }
 #+END_SRC
 
+Output:
 
 #+BEGIN_SRC bash
-  # >>> [ enum ] - '@intFromEnum(ResultU8.Success) == 0x01': true
-  # >>> [ enum ] - '@intFromEnum(ResultU8.Failure) == 0x04': true 
+  [ test_enum ] current_state, type: enum.Status, size: 1, tagName: Pending, value: enum.Status.Pending, value in integer: 0
+  [ test_enum ] current_state, type: enum.Status, size: 1, tagName: Processing, value: enum.Status.Processing, value in integer: 1
+  [ test_enum ] current_state, type: enum.Status, size: 1, tagName: Done, value: enum.Status.Done, value in integer: 2
 #+END_SRC
-
-</br>
-
 
 
 ** ~enum~ with method
 
 #+BEGIN_SRC zig
-  const std = @import("std");
-  const print = std.debug.print;
-
   pub fn main() void {
       const ResultU8 = enum(u8) {
           Success = 0x01,
@@ -115,9 +107,6 @@ By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the 
 ** Switch on enum
 
 #+BEGIN_SRC zig
-  const std = @import("std");
-  const print = std.debug.print;
-
   pub fn main() void {
       const ResultU8 = enum(u8) {
           Success = 0x01,
@@ -129,8 +118,8 @@ By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the 
       //
       const failure_result = ResultU8.Failure;
       const result_str = switch (failure_result) {
-          ResultU8.Success => "| > Success",
-          ResultU8.Failure => "| > Failure",
+          ResultU8.Success => "Success",
+          ResultU8.Failure => "Failure",
       };
 
       print(
@@ -138,4 +127,7 @@ By default, =enum= value is integer, you can use ~@intFromEnum~ to get back the 
           .{result_str},
       );
   }
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC

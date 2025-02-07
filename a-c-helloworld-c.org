@@ -12,14 +12,14 @@ Here is simple hellow world of =C= (copy and save it to =./temp.c=)
 #+END_SRC
 
 
-* Build and run by =zig cc=
+** Build and run by =zig cc=
 
 #+BEGIN_SRC c
   zig cc -o temp_c -std=c11 -Os -DNDEBUG temp.c && strip temp_c && ./temp_c
 #+END_SRC
 
 
-* Cross-compilation
+** Cross-compilation
 
 #+BEGIN_SRC bash
   # Linux MUSL (Intel and ARM64)

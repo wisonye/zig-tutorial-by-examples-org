@@ -7,6 +7,10 @@
   const a: u32 = 5;
   const b: u32 = 4;
   const result = if (a != b) 47 else 3089;
+  print("\n>>> result: {}", .{result});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 And that syntax only support single expression like ~var = if () A else B;~ that's why you can't do something like this:
@@ -21,32 +25,28 @@ And that syntax only support single expression like ~var = if () A else B;~ that
 
 It won't work!!!
 
-Also, that's why no matter how long that sinple expression is, you have to do like that:
+If you really want to assign a variable after the complicated logic, you have to use =block expression return= trick like this:
 
 #+BEGIN_SRC zig
-  const score_font_point = rl.Vector2{
-      .x = if (is_player_1) name_point.x + name_font_size.x + config.SCOREBOARD_UI_SPACE_BETWEEN_NAME_AND_SCORE else name_point.x - config.SCOREBOARD_UI_SPACE_BETWEEN_NAME_AND_SCORE - score_font_size.x,
-      .y = container.y + ((container.height - score_font_size.y) / 2),
+  const a: u32 = 4;
+  const b: u32 = 5;
+
+  //
+  // In zig, `blocks` are expressions, you can give it a label and return value by the `break :BLOCK_LABEL XXXX`
+  //
+  // `back_to_here` here is a label name, can be anything you want:)
+  //
+  const result = back_to_here: {
+      print("\n>>> Inside 'back_to_here' block expression.", .{});
+
+      // ...ignore the complicated logic to set `result` var value
+
+      // return `a + b` and assign to `result`
+      break :back_to_here a + b;
   };
+
+  print("\n>>> result: {}", .{result});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
-
-
-** Use ~if~ with an optional value
-
-#+BEGIN_SRC zig
-  const my_result: ?u8 = 200;
-  // const my_result: ?u8 = null;
-
-  //
-  // If `my_result` is not `null`, then we got `value` in the if block
-  //
-  if (my_result) |value| {
-      print("\n>>> my_result (optinoal value): {d}", .{value});
-  }
-#+END_SRC
-
-#+BEGIN_SRC zig
-  # >>> my_result (optinoal value): 200⏎
-#+END_SRC
-
-

@@ -39,3 +39,11 @@
 | =anyerror=         | (none)               | an error code                                                                   |
 | =comptime_int=     | (none)               | Only allowed for comptime-known values. The type of integer literals.           |
 | =comptime_float=   | (none)               | Only allowed for comptime-known values. The type of float literals.             |
+
+
+** String
+
+| Type       | Description                             |
+|------------+-----------------------------------------|
+| =[]const u8= | String (read-only): A slice of const u8 |
+| =[]u8=       | String (read & write): A slice of u8    |

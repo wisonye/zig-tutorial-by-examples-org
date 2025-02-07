@@ -1,0 +1,171 @@
+* Union
+
+** Overview
+
+=union= defines a set of possible types that a value can be as a list of fields. All fields are shared the same memory area which the size is the largest =field's= size.
+
+#+BEGIN_SRC zig
+  const LOG_PREFIX = "[ test_union ]";
+
+  fn print_union(var_name: []const u8, u: anytype) void {
+      print(
+          "\n{s} {s}, type: {}, size: {}, value: {}",
+          .{
+              LOG_PREFIX,
+              var_name,
+              @TypeOf(u),
+              @sizeOf(@TypeOf(u)),
+              u,
+          },
+      );
+  }
+
+  //
+  // union defines a set of possible types that a value can be as a list of fields.
+  // All fields are shared the same memory area which the size is the largest
+  // field's size.
+  //
+  const PossibleValue = union {
+      u8_value: u8,
+      isize_value: isize,
+      f32_value: f32,
+  };
+
+  pub fn main() void {
+      const possible_value: PossibleValue = .{ .f32_value = 123.456 };
+      print(
+          "\n{s} {s}, type: {}, size: {}, value: {}",
+          .{
+              LOG_PREFIX,
+              "possible_value",
+              @TypeOf(possible_value),
+              @sizeOf(@TypeOf(possible_value)),
+              possible_value.f32_value,
+          },
+      );
+  }
+
+  const std = @import("std");
+  const print = std.debug.print;
+#+END_SRC
+
+
+Output:
+
+#+BEGIN_SRC bash
+  [ test_union ] possible_value, type: main.PossibleValue, size: 16, value: 1.23456e2
+#+END_SRC
+
+
+** Tagged-union
+
+=Union= combines with =enum= becomes =tagged union= (enum with data). Here use =tagged-union= to represent the ~Result~ type in =Rust=:
+
+#+BEGIN_SRC zig
+  const LOG_PREFIX = "[ test_union ]";
+
+  const SuccessType = struct {
+      id: usize,
+      message: []const u8,
+  };
+
+  const ErrorType = []const u8;
+
+  //
+  // Create a tagged-union type
+  //
+  fn Result(comptime T: type, comptime E: type) type {
+      return union(enum) {
+          Ok: T,
+          Err: E,
+      };
+  }
+
+  pub fn main() void {
+      const ok_value: Result(SuccessType, ErrorType) = .{
+          .Ok = .{
+              .id = 1001,
+              .message = "You got the interview, congras:)",
+          },
+      };
+      print(
+          "\n{s} {s}, type: {}, size: {}, id: {}, message: {s}",
+          .{
+              LOG_PREFIX,
+              "ok_value",
+              @TypeOf(ok_value),
+              @sizeOf(@TypeOf(ok_value)),
+              ok_value.Ok.id,
+              ok_value.Ok.message,
+          },
+      );
+
+      const err_value: Result(SuccessType, ErrorType) = .{
+          .Err = "Sorry, you're failed:)",
+      };
+      print(
+          "\n{s} {s}, type: {}, size: {}, error message: {s}",
+          .{
+              LOG_PREFIX,
+              "err_value",
+              @TypeOf(err_value),
+              @sizeOf(@TypeOf(err_value)),
+              err_value.Err,
+          },
+      );
+
+      //
+      // Use swith on tagged-union
+      //
+      switch (ok_value) {
+          // Capture the inner value into `v` variable
+          .Ok => |v| print(
+              "\n{s} {s}, id: {}, message: {s}",
+              .{ LOG_PREFIX, "ok_value", v.id, v.message },
+          ),
+
+          .Err => |v| {
+              print(
+                  "\n{s} {s}, error message: {s}",
+                  .{ LOG_PREFIX, "ok_value", v },
+              );
+          },
+      }
+
+      switch (err_value) {
+          // Capture the inner value into `v` variable
+          .Ok => |v| print(
+              "\n{s} {s}, id: {}, message: {s}",
+              .{ LOG_PREFIX, "err_value", v.id, v.message },
+          ),
+
+          .Err => |v| {
+              print(
+                  "\n{s} {s}, error message: {s}",
+                  .{ LOG_PREFIX, "err_value", v },
+              );
+          },
+      }
+
+      //
+      // Use `if` on a tagged-union if you only care one possible value!!!
+      //
+      if (ok_value == .Ok and ok_value.Ok.id == 1001) print(
+          "\n{s} {s}, id: {}, message: {s}",
+          .{ LOG_PREFIX, "ok_value", ok_value.Ok.id, ok_value.Ok.message },
+      );
+  }
+
+  const std = @import("std");
+  const print = std.debug.print;
+#+END_SRC
+
+Output:
+
+#+BEGIN_SRC bash
+  [ test_union ] ok_value, type: main.Result(main.SuccessType,[]const u8), size: 32, id: 1001, message: You got the interview, congras:)
+  [ test_union ] err_value, type: main.Result(main.SuccessType,[]const u8), size: 32, error message: Sorry, you're failed:)
+  [ test_union ] ok_value, id: 1001, message: You got the interview, congras:)
+  [ test_union ] err_value, error message: Sorry, you're failed:)
+  [ test_union ] ok_value, id: 1001, message: You got the interview, congras:)
+#+END_SRC

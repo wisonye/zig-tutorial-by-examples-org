@@ -1,4 +1,6 @@
-* Optional Type
+* Optional variable
+
+** Overview
 
 Syntax is =?TYPE= and the value can be either:
 
@@ -6,95 +8,74 @@ Syntax is =?TYPE= and the value can be either:
 - =null= for no value
 
 #+BEGIN_SRC zig
+  const LOG_PREFIX = "[ test_optional_variable ]";
+
+  //
+  // Optional var, `null` mean no payload!!!
+  //
+  const age: ?u8 = null;
+  // const age: ?u8 = 99;
+  print("\n{s} age type: {}, value: {?}", .{ LOG_PREFIX, @TypeOf(age), age });
+
   //
   // Optional 'string' type and init to `null`
   //
-  var tips: ?[]const u8 = null;
+  const tips: ?[]const u8 = null;
   print(
-      "\n>>> [ optional_variables ] - tips (option var) type: {}, value: {?s}",
-      .{ @TypeOf(tips), tips },
+      "\n{s} tips type: {}, value: {?s}",
+      .{ LOG_PREFIX, @TypeOf(tips), tips },
   );
+
+  //
+  // Use `if` to capture the `payload` in an optional variable
+  //
+  if (age) |v|
+      print("\n{s} age has a value: {}", .{ LOG_PREFIX, v });
+
+  //
+  // If you focus on check whether it's `null` or not
+  //
+  if (age == null)
+      print("\n{s} age is null", .{LOG_PREFIX});
+
+  //
+  // If you know exactly the optional variable has payload, use `.?` to get it
+  // back!!!
+  //
+  const I_know_you_have_value: ?usize = 100;
+  print(
+      "\n{s} I_know_you_have_value value: {}",
+      .{ LOG_PREFIX, I_know_you_have_value.? },
+  );
+
+  //
+  // `orelse` is equivalent with: `if (optional_var) |v| v else XXX`
+  //
+  // const my_age: ?u8 = if (age) |v| v else 88;
+  const my_age: ?u8 = age orelse 88;
+  print(
+      "\n{s} my_age type: {}, value: {?}",
+      .{ LOG_PREFIX, @TypeOf(my_age), my_age },
+  );
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
+Output:
 
 #+BEGIN_SRC bash
-  # >>> [ optional_variables ] - tips (option var) type: ?[]const u8, value: null
+  [ test_optional_variable ] age type: ?u8, value: null
+  [ test_optional_variable ] tips type: ?[]const u8, value: null
+  [ test_optional_variable ] age is null
+  [ test_optional_variable ] I_know_you_have_value value: 100
+  [ test_optional_variable ] my_age type: ?u8, value: 88
 #+END_SRC
 
-</br>
 
-#+BEGIN_SRC zig
-  // Assign value
-  tips = "Zig is cool!";
-  print(
-      "\n>>> [ optional_variables ] - tips (option var) type: {}, value: {?s}",
-      .{ @TypeOf(tips), tips },
-  );
-#+END_SRC
 
-#+BEGIN_SRC bash
-  # >>> [ optional_variables ] - tips (option var) type: ?[]const u8, value: Zig is cool!
-#+END_SRC
-
+** Tips
 
 ~[]const u8~ read as =const slice of u8= which is a string literal, just leave it right now.
 
 ~?[]const u8~ read as =an optional const slice of u8= which is either =null= or a valid string literal.
-
-
-* An optional variable can do something like ~unwrap~ in =Rust=
-
-You got a few ways to do that:
-
-*** Use =orelse= to given a value if optional variable is =null=
-
-#+BEGIN_SRC zig
-  var maybe_have_int_value: ?usize = null;
-  maybe_have_int_value = 123;
-  print(
-      "\n>>> [ optional_variables ] - maybe_have_init_value (option var) type: {}, value: {?}",
-      .{ @TypeOf(maybe_have_int_value), maybe_have_int_value },
-  );
-
-  const unwrapped_with_orelse = if (maybe_have_int_value != null) maybe_have_int_value.? else 888;
-  const unwrapped_with_orelse_2 = maybe_have_int_value orelse 888;
-  print(
-      "\n>>> [ optional_variables ] - unwrapped_with_orelse type: {}, value: {?}",
-      .{ @TypeOf(unwrapped_with_orelse), unwrapped_with_orelse },
-  );
-  print(
-      "\n>>> [ optional_variables ] - unwrapped_with_orelse_2 type: {}, value: {?}",
-      .{ @TypeOf(unwrapped_with_orelse_2), unwrapped_with_orelse_2 },
-  );
-#+END_SRC
-
-
-#+BEGIN_SRC bash
-  # >>> [ optional_variables ] - maybe_have_init_value (option var) type: ?usize, value: 123
-  # >>> [ optional_variables ] - unwrapped_with_orelse type: usize, value: 123
-  # >>> [ optional_variables ] - unwrapped_with_orelse_2 type: usize, value: 123
-#+END_SRC
-
-
-
-*** Use =.?= to unwrap the value if you make sure it has a value
-
-#+BEGIN_SRC zig
-  const unwrapped_with_orelse = if (maybe_have_int_value != null) maybe_have_int_value.? else 888;
-#+END_SRC
-
-
-*** Use =if (optional_var) |value| {}= block
-
-#+BEGIN_SRC zig
-  //
-  // If `maybe_have_int_value` isn't `null`, then the `value` holds the actual value
-  //
-  if (maybe_have_int_value) |value| {
-      print(
-          "\n>>> [ optional_variables ] - unwrapped_value: {}",
-          .{value},
-      );
-  }
-#+END_SRC
-

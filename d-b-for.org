@@ -3,7 +3,7 @@
 ** Basic
 
 #+BEGIN_SRC zig
-  const items = [_]i32 { 4, 5, 3, 4, 0 };
+  const items = [_]i32{ 4, 5, 3, 4, 0 };
   var sum: i32 = 0;
 
   //
@@ -16,58 +16,111 @@
       }
       sum += value;
   }
+  print("\n>>> sum: {}", .{sum});
 
   //
   // To iterate over a portion of a slice, reslice.
   //
-  for (items[0..1]) |value| {
+  sum = 0;
+  for (items[1..3]) |value| {
       sum += value;
   }
+  print("\n>>> sum: {}", .{sum});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 
 ** You can have index in ~for~ loop
 
 #+BEGIN_SRC zig
+  const items = [_]i32{ 4, 5, 3, 4, 0 };
+
   //
   // To access the index of iteration, specify a second capture value.
   // This is zero-indexed.
   //
-  var sum2: i32 = 0;
+  var sum_index: i32 = 0;
   for (items, 0..) |_, i| {
       try expect(@TypeOf(i) == usize);
-      sum2 += @intCast(i32, i);
+      // i: 0, 1, 2, 3, 4 = 10
+      sum_index += @intCast(i);
   }
+  print("\n>>> sum_index: {}", .{sum_index});
+
+  const std = @import("std");
+  const print = std.debug.print;
+  const expect = @import("std").testing.expect;
 #+END_SRC
 
 
 ** Change value in ~for~ loop
 
 #+BEGIN_SRC zig
-  var items = [_]i32 { 3, 4, 2 };
+  var items = [_]i32{ 3, 4, 2 };
 
   //
   // Iterate over the slice by reference by specifying that the capture value is a pointer.
   //
-  for (items) |*value| {
+  for (&items) |*value| {
       value.* += 1;
   }
+
+  print("\n>>> items after mutated: {any}", .{items});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 
 ** Use ~for~ loop on a range of values
 
 #+BEGIN_SRC zig
-  var temp: usize = 0;
+  var sum: usize = 0;
   for (0..std.math.maxInt(u16)) |_| {
-      temp += 1;
+      sum += 1;
   }
+  print("\n>>> sum: {}", .{sum});
+
+  const std = @import("std");
+  const print = std.debug.print;
+#+END_SRC
+
+
+** Labled for loop
+
+#+BEGIN_SRC zig
+   test "nested break" {
+      var count: usize = 0;
+      outer: for (1..6) |_| {
+          for (1..6) |_| {
+              count += 1;
+              break :outer;
+          }
+      }
+      try expect(count == 1);
+  }
+
+  test "nested continue" {
+      var count: usize = 0;
+      outer: for (1..9) |_| {
+          for (1..6) |_| {
+              count += 1;
+              continue :outer;
+          }
+      }
+
+      try expect(count == 8);
+  }
+
+  const expect = @import("std").testing.expect;
 #+END_SRC
 
 
 ** inline ~for~ loop
 
-=inline for loop= unroll or expand at comile-time, I treat it as the simple version of =macro=.
+=inline for loop= unroll or expand at comiple-time, I treat it as the simple version of =macro=.
 
 #+BEGIN_SRC zig
   const expect = @import("std").testing.expect;
