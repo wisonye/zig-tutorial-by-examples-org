@@ -16,11 +16,14 @@ Example:
   print("\n>>> @typeName(@TypeOf(a)): {s}", .{@typeName(@TypeOf(a))});
   print("\n>>> @typeInfo(@TypeOf(a)): {}", .{@typeInfo(@TypeOf(a))});
   print("\n>>> @Type(@TypeOf(a)): {}", .{@Type(@typeInfo(@TypeOf(a)))});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 #+BEGIN_SRC bash
-  # >>> @TypeOf(a): *const [3:0]u8
-  # >>> @typeName(@TypeOf(a)): *const [3:0]u8
-  # >>> @typeInfo(@TypeOf(a)): builtin.Type{ .Pointer = builtin.Type.Pointer{ .size = builtin.Type.Pointer.Size.One, .is_const = true, .is_volatile = false, .alignment = 1, .address_space = builtin.AddressSpace.generic, .child = [3:0]u8, .is_allowzero = false, .sentinel = null } }
-  # >>> @Type(@TypeOf(a)): *const [3:0]u8
+  >>> @TypeOf(a): *const [3:0]u8
+  >>> @typeName(@TypeOf(a)): *const [3:0]u8
+  >>> @typeInfo(@TypeOf(a)): builtin.Type{ .Pointer = builtin.Type.Pointer{ .size = builtin.Type.Pointer.Size.One, .is_const = true, .is_volatile = false, .alignment = 1, .address_space = builtin.AddressSpace.generic, .child = [3:0]u8, .is_allowzero = false, .sentinel = null } }
+  >>> @Type(@TypeOf(a)): *const [3:0]u8
 #+END_SRC

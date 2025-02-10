@@ -37,9 +37,6 @@
 For example:
 
 #+BEGIN_SRC zig
-  @intToFloat(f32, self.alpha_mask.?.width),
-  @floatToInt(c_int, self.ball.radius * 2),
-
   const temp_int = try std.fmt.parseInt(u8, "11", 10);
   const hex_u8 = try std.fmt.parseInt(u8, "0A", 16);
 

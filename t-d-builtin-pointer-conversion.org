@@ -18,14 +18,17 @@ Example:
   const ptr_from_int: *usize = @ptrFromInt(int_from_ptr);
 
   print("\n>>> ptr: {*}", .{ptr});
-  print("\n>>> int_from_ptr: 0x{X}", .{int_from_ptr});
+  print("\n>>> int_from_ptr: 0x{X:0>16}", .{int_from_ptr});
   print("\n>>> ptr_from_int: {p}", .{ptr_from_int});
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 #+BEGIN_SRC bash
-  # >>> ptr: *const [14:0]u8@2aa9f0
-  # >>> int_from_ptr: 0x2AA9F0
-  # >>> ptr_from_int: usize@2aa9f0
+  >>> ptr: *const [14:0]u8@1003e60
+  >>> int_from_ptr: 0x0000000001003E60
+  >>> ptr_from_int: usize@1003e60
 #+END_SRC
 
 
@@ -59,11 +62,21 @@ Example:
       @TypeOf(ptr_without_explicity_type),
       ptr_without_explicity_type,
   });
+
+  const ptr_removed_const: [*]u8 = @constCast(string_literal_var);
+  print("\n>>> ptr_removed_const: {}, address: 0x{*}", .{
+      @TypeOf(ptr_removed_const),
+      ptr_removed_const,
+  });
+
+  const std = @import("std");
+  const print = std.debug.print;
 #+END_SRC
 
 #+BEGIN_SRC bash
-  # >>> ptr_with_explicity_type, type: [*]const u8, address: 0xu8@20cc08
-  # >>> ptr_without_explicity_type, type: [*]const u8, address: 0xu8@20cc08
+  >>> ptr_with_explicity_type, type: [*]const u8, address: 0xu8@101f9d8
+  >>> ptr_without_explicity_type, type: [*]const u8, address: 0xu8@101f9d8
+  >>> ptr_removed_const: [*]u8, address: 0xu8@101f9d8
 #+END_SRC
 
 
@@ -118,7 +131,7 @@ So, the ~my_result_ptr~ pointer type is ~?*anyopaque~ which mean ~void *~. The a
 
 #+BEGIN_SRC zig
   const my_result_ptr = @as(
-      ,*MyResult,
+      *MyResult,
       @ptrCast(std.c.malloc(@sizeOf(MyResult))),
   );
   print("\n>>> my_result_ptr, type: {} , address: {*}", .{
@@ -130,14 +143,10 @@ So, the ~my_result_ptr~ pointer type is ~?*anyopaque~ which mean ~void *~. The a
 It fails with the following error:
 
 #+BEGIN_SRC bash
-  src/main.zig:17:9: error: cast increases pointer alignment
-          @ptrCast(std.c.malloc(@sizeOf(MyResult))),
-          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  src/main.zig:17:30: note: '?*anyopaque' has alignment '1'
-          @ptrCast(std.c.malloc(@sizeOf(MyResult))),
-                   ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
-  src/main.zig:17:9: note: '*main.MyResult' has alignment '2'
-  src/main.zig:17:9: note: use @alignCast to assert pointer alignment
+  src/main.zig:11:9: error: @ptrCast increases pointer alignment
+  src/main.zig:11:30: note: '?*anyopaque' has alignment '1'
+  src/main.zig:11:9: note: '*main.MyResult' has alignment '2'
+  src/main.zig:11:9: note: use @alignCast to assert pointer alignment
 #+END_SRC
 
 
