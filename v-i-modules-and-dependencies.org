@@ -15,7 +15,12 @@ If you want another package (consumer package) that is able to use  your current
   // Create public module
   //
   const my_module = b.addModule("my_module_name_here", .{
-      .root_source_file = .{ .path = "src/my_module_filename.zig" },
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "src/my_module_filename.zig",
+          },
+      },
   });
 #+END_SRC
 
@@ -31,7 +36,12 @@ In some cases, you want a private module which only visible inside your own pack
   // Create private module
   //
   const logger_module = b.createModule(.{
-      .root_source_file = .{ .path = "./src/logger_utils.zig" },
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "./src/logger_utils.zig",
+          },
+      },
   });
 #+END_SRC
 
@@ -58,11 +68,21 @@ If you want to export ~Bits~ from ~bits.zig~ and ~Random~ from  ~random_numbers.
 
 #+BEGIN_SRC zig
   const random_module = b.addModule("Random", .{
-      .root_source_file = .{ .path = "src/random_numbers.zig" },
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "src/random_numbers.zig",
+          },
+      },
   });
 
   const bits_module = b.addModule("Bits", .{
-      .root_source_file = .{ .path = "src/bits.zig" },
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "src/bits.zig",
+          },
+      },
   });
 #+END_SRC
 
@@ -85,7 +105,12 @@ Then only one module exports in ~build.zig~:
 
 #+BEGIN_SRC zig
   const z_utils_module = b.addModule("z_utils", .{
-      .root_source_file = .{ .path = "src/z_utils.zig" },
+      .root_source_file = std.Build.LazyPath{
+          .src_path = .{
+              .owner = b,
+              .sub_path = "src/z_utils.zig",
+          },
+      },
   });
 #+END_SRC
 
@@ -106,6 +131,8 @@ You need to go through the following steps:
 *** 1) Add a ~build.zig.zon~ to your project root folder
 
 This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for your package:
+
+You don't need to edit this file manually, you can use =zig fetch --save url= instead, I'll talk about that later:
 
 #+BEGIN_SRC zig
 .{
@@ -174,8 +201,26 @@ This ~build.zig.zon~ holds all dependencies (with one or mulitple modules) for y
     #+END_SRC
 
 
+*** 2) Use =zig fetch= to add dependencies in to your ~build.zig.zon~
 
-*** 2) Add the following stuff into your ~build.zig~
+#+BEGIN_SRC bash
+  #
+  # If you fetch from an URL
+  #
+  zig fetch --save https://github.com/wisonye/z-utils/archive/a180a0c4c8e0f7ef5f5605c2b3344bbc9cd759d2.tar.gz
+
+  #
+  # If you fetch from your local folder (even a folder symbol link)
+  #
+  zig fetch --save ~/zig/z-utils
+
+  # If you want to change the dependency's name, you can do `--save=NAME`
+  zig fetch --save=zutils ~/zig/z-utils
+
+#+END_SRC
+
+
+*** 3) Add the following stuff into your ~build.zig~
 
 In the build script, dependencies can be referenced using the ~std.Build.dependency~ function. This takes the name of a dependency (as given in =build.zig.zon=) and returns a ~*std.Build.Dependency~. You can then use the artifact and module methods on this object to get binary artifacts and Zig modules exposed by the dependency.
 
@@ -202,118 +247,10 @@ In the build script, dependencies can be referenced using the ~std.Build.depende
   #+END_SRC
 
 
-*** 3) Import the module and use it
+*** 4) Import the module and use it
 
 #+BEGIN_SRC zig
   const random = @import("z_utils").Random;
   const bits = @import("z_utils").Bits;
 #+END_SRC
-
-
-
-** 4. How to import modules from another package by local folder without ~build.zig.zon~
-
-You need to go through the following steps:
-
-*** 1) Copy another exsiting zig project folder into your current project root folder
-
-You can directly copy to current project root folder or add them as =git submodule=:
-
-#+BEGIN_SRC bash
-  git submodule add YOUR_REPO_URL 
-#+END_SRC
-
-
-*** 2) Add the following stuff into your ~build.zig~
-
-Use ~std.Build.anonymousDependency~ instead of ~std.Build.dependency~ to import local dependencies:
-
-#+BEGIN_SRC zig
-  const z_utils_dep = b.anonymousDependency(
-      //
-      // Your sub project or git submodule folder relative path to current root folder
-      //
-      "z-utils",
-      //
-      // Import the dependency `build.zig`
-      //
-      @import("z-utils/build.zig"),
-      .{
-          .target = target,
-          .optimize = optimize,
-      },
-  );
-
-  const z_utils_module = z_utils_dep.module("z_utils");
-  exe.root_module.addImport("z_utils", z_utils_module);
-#+END_SRC
-
-- ~z_utils_dep.module("z_utils");~: that ~"z_utils"~ is the module name which comes from the dependency package's ~build.zig~:
-
-  #+BEGIN_SRC zig
-    const z_utils_module = b.addModule("z_utils", .{
-  #+END_SRC
-
-
-*** 3) Import the module and use it
-
-#+BEGIN_SRC zig
-  const random = @import("z_utils").Random;
-  const bits = @import("z_utils").Bits;
-#+END_SRC
-
-
-** 4. How to update dependencies
-
-If you want to update your dependencies to the up-to-date version, you need to do like this:
-
-*** 1) Print new =COMMIT_HASH=
-
-#+BEGIN_SRC bash
-  git ls-remote REPO_PUBLIC_URL
-
-  # da563c2a7d5de679cfe613b679b81cfeb777b4a6        HEAD
-  # da563c2a7d5de679cfe613b679b81cfeb777b4a6        refs/heads/master
-#+END_SRC
-
-
-*** 2) Replace the new =COMMIT_HASH= into ~build.zig.zon~ and remove ~.hash~ field
-
-#+BEGIN_SRC zon
-.z_utils = .{
-    .url = "https://github.com/wisonye/z-utils/archive/da563c2a7d5de679cfe613b679b81cfeb777b4a6.tar.gz",
-},
-#+END_SRC
-
-Make sure to remove the ~.hash~ field, otherwise, ~zig build~ still use old ~.hash~ value and compile will fail!!!
-
-
-
-*** 3) Run =zig build -fsummary= to get the new ~.hash~ value
-
-#+BEGIN_SRC bash
-  zig build -fsummary
-
-  # build.zig.zon:6:20: error: url field is missing corresponding hash field
-  #             .url = "https://github.com/wisonye/z-utils/archive/da563c2a7d5de679cfe613b679b81cfeb777b4a6.tar.gz",
-  #                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # note: expected .hash = "12206e685a70db7c6dbba3604bb25166e6338c9e94e3652fc021c7f7e3e9becc3ee7",
-#+END_SRC
-
-Then update that new ~.hash~ to ~build.zig.zon~
-
-#+BEGIN_SRC zon
-.z_utils = .{
-    .url = "https://github.com/wisonye/z-utils/archive/da563c2a7d5de679cfe613b679b81cfeb777b4a6.tar.gz",
-    .hash = "12206e685a70db7c6dbba3604bb25166e6338c9e94e3652fc021c7f7e3e9becc3ee7",
-},
-#+END_SRC
-
-
-*** 4) Update ~build.zig~ if needed
-
-If the dependency changes the =module= name or add new =module=, then you need to update your ~build.zig~.
-
-
-*** 5) Run =zig build -fsummary= again
 
